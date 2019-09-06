@@ -8,6 +8,7 @@ import sys  # to get file system encoding
 
 import pandas as pd
 import numpy as np
+from operator import itemgetter 
 
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -45,23 +46,22 @@ globalClock = core.MonotonicClock() # to track the time since experiment started
 trialClock = core.Clock() #unlike globalclock, gets reset each trial
 
 
-
 ##########Instruction##########
 Instr_1 = visual.TextStim(win=win, name='Instr_1', color='black',
     text='Please read these instructions carefully before you begin the experiment. Press the spacebar to continue.')
 
 Instr_2 = visual.TextStim(win=win, name='Instr_2', color='black',
-    text='In this experiment, you will see a series of face images...Press q if it is a female face and p if it is a male face...')
+    text='In this experiment, you will see a series of face images...Press w if the image shows a female face and o if it shows a male face...Press the spacebar to continue.')
 
-
+Ending = visual.TextStim(win=win, name='Instr_1', color='black',
+    text='Thank you for participating in this study. Press the spacebar to quit.')
 
 ##########Stimuli##########
 os.chdir(current_working_directory + '/Stimuli_faces')
 Imagelist = list(os.listdir())
-print(Imagelist)
+os.chdir("..")
 
-
-#Image = visual.ImageStim(win=win, name='Image', image=stim_image, size=(0.42, 0.5), interpolate = True)
+#Image = visual.ImageStim(win=win, name='Image', image='/Stimuli_faces', size=(0.42, 0.5), interpolate = True)
 
 
 ##########Trial Sequence##########
@@ -74,30 +74,46 @@ corrAns = []
 ITI = []
 
 
-Imagelist = np.random.shuffle(Imagelist)
-stim_image.append(list(np.random.choice(Imagelist, 8, replace=False)) * 80)
-stim_image.append(list(np.random.choice(Imagelist, 16, replace=False)) * 80)
-stim_image.append(list(np.random.choice(Imagelist, 80, replace=False)) * 80)
+#Imagelist = np.random.shuffle(Imagelist)
 
-frequency = np.random.shuffle(['high']*80 + ['medium']*80 + ['low']*80)
-print (frequency)
-    
-#    
-#    for i in stim_image:
-#        if i #start with female:
-#            corrAns.append('q')
-#        else:
-#            corrAns.append('p')
-#    
-ITI = ITI.append(random.randint(ITI_min, ITI_max))
+# index the images for high, medium and low frequencies for later selection
+indices_all = (np.random.choice(len(Imagelist), 104, replace=False)).tolist()
+indices_low = indices_all[:80]
+indices_medium = indices_all[80:96]
+indices_high = indices_all[96:104]
+
+# select corresponding images
+stim_image_high =list(itemgetter(*indices_high)(Imagelist))* 10
+print(stim_image_high)
+stim_image_medium = list(itemgetter(*indices_medium)(Imagelist))* 5
+print(stim_image_medium)
+stim_image_low = list(itemgetter(*indices_low)(Imagelist))* 80
+print(stim_image_low)
+stim_image = stim_image_high +stim_image_medium + stim_image_low
+
+# frequency
+frequency = ['high']*80 + ['medium']*80 + ['low']*80
+
+# corrAns
+for i in stim_image:
+    if ('m' or 'M') in i:
+        corrAns.append('w')
+    else:
+        corrAns.append('o')
+#print(corrAns)
+
+#ITI & duration
+for i in range(240):
+    ITI.append(random.randint(ITI_min, ITI_max))
 duration = [duration]*240
 
-#print([stim_image, frequency, corrAns, duration, ITI])
-print([stim_image, frequency, duration, ITI])
+expmatrix = [stim_image, frequency, corrAns, duration, ITI]
+#print(expmatrix)
+
 
 
 ##----------------------------------------------------------------------------##
-##--------------------------START RUNNING TRIALS------------------------------##
+##-----------------------------START RUNNING----------------------------------##
 ##----------------------------------------------------------------------------##
 
 
@@ -106,26 +122,115 @@ print([stim_image, frequency, duration, ITI])
 Instr_1.setAutoDraw(True)
 
 advance = 0
-while advance < 10:
+while advance < 3:
     if event.getKeys(keyList=["space"]):
         advance += 1
     if advance == 1:
         Instr_1.setAutoDraw(False)
         Instr_2.setAutoDraw(True)
-#    elif advance == 2:
-#        Instr_2.setAutoDraw(False)
-#        Instr_3.setAutoDraw(True)
-#     
+    else:
+        Instr_2.setAutoDraw(False)
+
     if event.getKeys(keyList=["escape"]):
         core.quit()
     win.flip()
 
 
+##------------------------------START TRIALS FOR LOOPS----------------------------------##
+
+theseKeys = []
+for trial in range(len(stim_image)):
+    frameN = -1 # number of completed frames (so 0 is the first frame)
+    t = 0
+    overalltime = globalClock.getTime()
+    trialClock.reset()  # clock
+    continueRoutine = True
+
+    ##------------------SET DURATION & ITI OF STIMULI-------------------##
+    #duration 1000 ms
+    duration = expmatrix[3][trial]
+    
+    #ITI jittering 800-2000 ms
+    ITI = expmatrix[4][trial]
+
+    ##---------------------SET STIMULI & RESPONSE---------------------------##
+    Image.setImage(expmatrix[0][trial])
+    corrAns = expmatrix[2][trial]
+    
+    ##--------------------------WHILE LOOP BEGINS-------------------------##
+    while continueRoutine:
+        if event.getKeys(keyList=["escape"]):
+            core.quit()
+        # get current time
+        t = trialClock.getTime()
+        frameN += 1
+        theseKeys = event.getKeys(keyList=['w', 'o'])
+        key_resp = event.BuilderKeyResponse()
+#    Fixation.setAutoDraw(True)
+#    Fixation.tStart = t
+
+        ##--------------------STIMULI PRESENTATION-------------------------------##
+    
+        if routineTimer.getTime() > ITI: # or frameN == ITI
+            Image.tStart = t
+            Image.setAutoDraw(True)
+        if routineTimer.getTime() > duration + ITI:
+            Image.tEnd = t
+            Image.setAutoDraw(False)
+            win.callOnFlip(key_resp.clock.reset)  # t=0 on next screen flip
+            event.clearEvents(eventType='keyboard')
+        
+        if len(theseKeys) > 0 and (frameN > duration + ITI):# at least one key was pressed
+            if theseKeys[-1] != None:
+                key_resp.rt = key_resp.clock.getTime()
+        
+            # was this 'correct'?
+            if str(corrAns) in theseKeys:
+                key_resp.corr = 1
+            else:
+                key_resp.corr = 0
+
+            # a response ends the routine
+            continueRoutine = False
+    
+        ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
+
+        if not continueRoutine:
+            break
+        else:
+            win.flip()
+##--------------------------RECORD DATA-------------------------------##
+
+    thisExp.addData('Trial',trialcounter)
+    trialcounter += 1
+
+    thisExp.addData('stim_image', stim_image)
+    thisExp.addData('frequency', frequency)
+    thisExp.addData('CorrectAnswer', corrAns) 
+    thisExp.addData('Response', theseKeys[-1])
+    thisExp.addData('Accuracy', key_resp.corr)
+    thisExp.addData('duration', duration)    
+    thisExp.addData('ITI', StimLetter.text)
+    #thisExp.addData('StimImageStartTime', Image.tStart)
+    #thisExp.addData('StimImageEndTime', Image.tEnd)
+    
+    if theseKeys[-1] != None:  # we had a response
+        thisExp.addData('RT', key_resp.rt)
+        
+    thisExp.nextEntry()
 
 
+event.clearEvents(eventType='keyboard')
+Ending.setAutoDraw(True)
+while len(event.getKeys(keyList=["space"])) == 0:
+    win.flip()
+Ending.setAutoDraw(False)
 
-
-
-
-
-
+# these shouldn't be strictly necessary (should auto-save)
+thisExp.saveAsWideText(filename+'.csv')
+thisExp.saveAsPickle(filename)
+logging.flush()
+# make sure everything is closed down
+thisExp.abort()  # or data files will save again on exit
+win.close()
+core.quit()
