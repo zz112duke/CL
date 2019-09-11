@@ -44,7 +44,7 @@ win = visual.Window(
 ##########Timer##########
 globalClock = core.MonotonicClock() # to track the time since experiment started
 trialClock = core.Clock() #unlike globalclock, gets reset each trial
-
+#routineTimer = core.CountdownTimer()
 
 ##########Instruction##########
 Instr_1 = visual.TextStim(win=win, name='Instr_1', color='black',
@@ -59,16 +59,16 @@ Ending = visual.TextStim(win=win, name='Instr_1', color='black',
 ##########Stimuli##########
 os.chdir(current_working_directory + '/Stimuli_faces')
 Imagelist = list(os.listdir())
-os.chdir("..")
 
-#Image = visual.ImageStim(win=win, name='Image', image='/Stimuli_faces', size=(0.42, 0.5), interpolate = True)
 
+Image = visual.ImageStim(win=win, name='Image', image='\\Users\\zz112\\Documents\\CCL\\Stimuli_faces\\CK_f_01.jpg', size=(0.42, 0.5), interpolate = True)
+Blank = visual.TextStim(win=win, name='blank', text='hello', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, color=u'black', colorSpace='rgb', opacity=1, depth=0.0);
 
 ##########Trial Sequence##########
 trials = 240
-duration = 1000
-ITI_min = 800
-ITI_max = 2000
+duration = 1.000
+ITI_min = 800.000
+ITI_max = 2000.000
 stim_image = []
 corrAns = []
 ITI = []
@@ -84,11 +84,8 @@ indices_high = indices_all[96:104]
 
 # select corresponding images
 stim_image_high =list(itemgetter(*indices_high)(Imagelist))* 10
-print(stim_image_high)
 stim_image_medium = list(itemgetter(*indices_medium)(Imagelist))* 5
-print(stim_image_medium)
 stim_image_low = list(itemgetter(*indices_low)(Imagelist))* 80
-print(stim_image_low)
 stim_image = stim_image_high +stim_image_medium + stim_image_low
 
 # frequency
@@ -104,8 +101,10 @@ for i in stim_image:
 
 #ITI & duration
 for i in range(240):
-    ITI.append(random.randint(ITI_min, ITI_max))
+    ITI.append(random.randint(ITI_min, ITI_max)/1000)
+print(ITI)
 duration = [duration]*240
+print(duration)
 
 expmatrix = [stim_image, frequency, corrAns, duration, ITI]
 #print(expmatrix)
@@ -139,8 +138,8 @@ while advance < 3:
 ##------------------------------START TRIALS FOR LOOPS----------------------------------##
 
 theseKeys = []
+trialcounter = 0
 for trial in range(len(stim_image)):
-    frameN = -1 # number of completed frames (so 0 is the first frame)
     t = 0
     overalltime = globalClock.getTime()
     trialClock.reset()  # clock
@@ -156,33 +155,35 @@ for trial in range(len(stim_image)):
     ##---------------------SET STIMULI & RESPONSE---------------------------##
     Image.setImage(expmatrix[0][trial])
     corrAns = expmatrix[2][trial]
-    
+    Blank.setAutoDraw(True)
+
+
     ##--------------------------WHILE LOOP BEGINS-------------------------##
     while continueRoutine:
         if event.getKeys(keyList=["escape"]):
             core.quit()
         # get current time
         t = trialClock.getTime()
-        frameN += 1
+        print(t)
+        #routineTimer.add(ITI)
         theseKeys = event.getKeys(keyList=['w', 'o'])
         key_resp = event.BuilderKeyResponse()
-#    Fixation.setAutoDraw(True)
-#    Fixation.tStart = t
-
+        #routineTimer.add(1.000000)   # this means that the response window is 1.5 secs
         ##--------------------STIMULI PRESENTATION-------------------------------##
     
-        if routineTimer.getTime() > ITI: # or frameN == ITI
-            Image.tStart = t
+        if t == ITI:
+            Blank.setAutoDraw(False)
             Image.setAutoDraw(True)
-        if routineTimer.getTime() > duration + ITI:
-            Image.tEnd = t
+        if t == ITI + duration:
             Image.setAutoDraw(False)
+
             win.callOnFlip(key_resp.clock.reset)  # t=0 on next screen flip
             event.clearEvents(eventType='keyboard')
         
-        if len(theseKeys) > 0 and (frameN > duration + ITI):# at least one key was pressed
+        if len(theseKeys) > 0 and ( t > duration + ITI):# at least one key was pressed
             if theseKeys[-1] != None:
                 key_resp.rt = key_resp.clock.getTime()
+                thisExp.addData('RT', key_resp.rt)
         
             # was this 'correct'?
             if str(corrAns) in theseKeys:
@@ -191,7 +192,7 @@ for trial in range(len(stim_image)):
                 key_resp.corr = 0
 
             # a response ends the routine
-            continueRoutine = False
+            #continueRoutine = False
     
         ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
 
@@ -213,15 +214,14 @@ for trial in range(len(stim_image)):
     thisExp.addData('ITI', StimLetter.text)
     #thisExp.addData('StimImageStartTime', Image.tStart)
     #thisExp.addData('StimImageEndTime', Image.tEnd)
-    
-    if theseKeys[-1] != None:  # we had a response
-        thisExp.addData('RT', key_resp.rt)
-        
+
     thisExp.nextEntry()
 
 
 event.clearEvents(eventType='keyboard')
 Ending.setAutoDraw(True)
+
+
 while len(event.getKeys(keyList=["space"])) == 0:
     win.flip()
 Ending.setAutoDraw(False)
