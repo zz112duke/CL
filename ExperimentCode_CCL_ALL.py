@@ -61,11 +61,13 @@ Ending = visual.TextStim(win=win, name='Instr_1', color='black',
     text='Thank you for participating in this study. Press the spacebar to quit.')
 
 
-##########Block##########
+
+##########Version##########
 # version 1 [non,con] version 2 [con,non]
-version = [1,2]
-version = str(random.sample(version,1))
-print(version)
+version = ['1','2']
+current_version = random.choice(version)
+
+
 
 ##########Stimuli##########
 os.chdir(current_working_directory + '/Stimuli_faces1')
@@ -88,18 +90,7 @@ stroop_text =visual.TextStim(win=win, name='stroop_text',
     depth=0)
 
 
-
-##########Trial Sequence & Exp Matrix##########
-trials = 240
-duration = 3.0
-ITI_min = 800.0
-ITI_max = 2000.0
-stim_image = []
-corrAns = []
-ITI = []
-
-
-
+###Indexing Image###
 # index the images for high, medium and low frequencies for later selection
 #indices_all = (np.random.choice(len(Imagelist), 104, replace=False)).tolist()
 indices_all = list(range(104))
@@ -121,41 +112,73 @@ stim_image_low2 = [Imagelist2[i] for i in indices_low]
 stim_image2 = stim_image_high2 +stim_image_medium2 + stim_image_low2
 
 
+##########Timing##########
+trials = 240
+duration = 3.0
+ITI_min = 800.0
+ITI_max = 2000.0
 
-
-# frequency
-frequency = ['high']*80 + ['medium']*80 + ['low']*80
-
-# congruency
-congruency = ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40
-
-# corrAns
-for i in stim_image:
-    if ('m' or 'M') in i:
-        corrAns.append('w')
-    else:
-        corrAns.append('o')
-
-
+ITI = []
 #ITI & duration
 for i in range(240):
     ITI.append(random.randint(ITI_min, ITI_max)/1000)
 
 duration = [duration]*240
 
-#Exp Matrix
-image_set = ['stim_image1','stim_image2']
+
+##########Frequency##########
+frequency = ['high']*80 + ['medium']*80 + ['low']*80
+
+##########Congruency##########
+congruency_con = ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40
+congruency_non = ['N/A']*240
+
+##########Exp Matrix##########
+image_set = [stim_image1,stim_image2]
 random.shuffle(image_set)
-expmatrix_non = [image_set[0], frequency, corrAns, duration, ITI]
-expmatrix_con = [image_set[1], frequency, congruency, corrAns, duration, ITI]
+print(len(image_set[0]))
+
+
+##########corrAns##########
+corrAns_stim_image1 = []
+for i in stim_image1:
+    if ('m' or 'M') in i:
+        corrAns.append('w')
+    else:
+        corrAns.append('o')
+
+corrAns_stim_image2 = []
+for i in stim_image2:
+    if ('m' or 'M') in i:
+        corrAns.append('w')
+    else:
+        corrAns.append('o')
 
 #Turn Exp Matrix into df to randomize rows
+expmatrix_non = [image_set[0], frequency, congruency_non, corrAns, duration, ITI]
 expmatrix_non = pd.DataFrame(expmatrix_non)
 expmatrix_non = expmatrix_non.transpose()
+expmatrix_non.columns = ['stim_image','Frequency','Congruency','corrAns','Duration','ITI']
 expmatrix_non = expmatrix_non.sample(frac=1).reset_index(drop=True)
+
+expmatrix_con = [image_set[1], frequency, congruency_con, corrAns, duration, ITI]
 expmatrix_con = pd.DataFrame(expmatrix_con)
 expmatrix_con = expmatrix_con.transpose()
+expmatrix_con.columns = ['stim_image','Frequency','Congruency','corrAns','Duration','ITI']
 expmatrix_con = expmatrix_con.sample(frac=1).reset_index(drop=True)
+#print (expmatrix_con)
+#print(len(expmatrix_con))
+
+
+
+if version == '1':
+    expmatrix = pd.concat([expmatrix_non , expmatrix_con])
+else:
+    expmatrix = pd.concat([expmatrix_con , expmatrix_non])
+
+print (expmatrix)
+print (len(expmatrix))
+
 
 
 
@@ -186,391 +209,119 @@ while advance < 2:
 ##------------------------------START THE EXPERIMENT----------------------------------##
 theseKeys = []
 trialcounter = 0
-rep = 0
-if version == 1:
-    if rep == 0:
-        ##------------------------------START TRIALS FOR LOOPS----------------------------------##
-        for trial in range(len(stim_image)):
-            t = 0
-            overalltime = globalClock.getTime()
-            trialClock.reset()  # clock
-            continueRoutine = True
-        
-            ##------------------SET DURATION & ITI OF STIMULI-------------------##
-            #duration 1000 ms
-            duration = expmatrix_non[3][trial]
-            
-            #ITI jittering 800-2000 ms
-            ITI = expmatrix_non[4][trial]
-        
-            ##---------------------SET STIMULI & RESPONSE---------------------------##
-            Image.setImage(expmatrix_non[0][trial])
-            stim_image = expmatrix_non[0][trial]
-            frequency = expmatrix_non[1][trial]
-            corrAns = expmatrix_non[2][trial]
 
-            
-        
-            ##--------------------------WHILE LOOP BEGINS-------------------------##
-            while continueRoutine:
-                if event.getKeys(keyList=["escape"]):
-                    core.quit()
-                # get current time
-                t = trialClock.getTime()
-                key_resp = event.BuilderKeyResponse()
-        
-                ##--------------------STIMULI PRESENTATION-------------------------------##
-                
-                if trialClock.getTime() < ITI:
-                     Blank.setAutoDraw(True)
-                elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
-                     Blank.setAutoDraw(False)
-                     stroop_text.setAutoDraw(True)
-                     Image.setAutoDraw(True)
-        
-                else:
-                     Image.setAutoDraw(False)
-                     Blank.setAutoDraw(False)
-                     stroop_text.setAutoDraw(False)
-                     continueRoutine = False
-                #print(continueRoutine)
-        
-        
-                theseKeys = event.getKeys(keyList=['w', 'o'])       
-                if len(theseKeys) > 0 and trialClock.getTime() < ITI + duration:# at least one key was pressed
-                    if theseKeys[-1] != None:
-                         key_resp.rt = key_resp.clock.getTime()
-                         thisExp.addData('Response', theseKeys[-1])
-                         thisExp.addData('RT', key_resp.rt)
-                
-                    # was this 'correct'?
-                    if str(corrAns) in theseKeys:
-                         key_resp.corr = 1
-                         thisExp.addData('Accuracy', key_resp.corr)
-                    else:
-                         key_resp.corr = 0
-                         thisExp.addData('Accuracy', key_resp.corr)
-        
-                    # a response ends the routine
-                    Image.setAutoDraw(False)
-                    Blank.setAutoDraw(False)
-                    stroop_text.setAutoDraw(False)
-                    continueRoutine = False
-                    #print(continueRoutine)
-            
-                ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
-        
-                if continueRoutine:
-                     win.flip()
-                else:
-                     break
-        ##--------------------------RECORD DATA-------------------------------##
-            trialcounter += 1
-            thisExp.addData('Trial',trialcounter)
-            thisExp.addData('stim_image', stim_image)
-            thisExp.addData('frequency', frequency)
-            thisExp.addData('congruency', congruency) 
-            thisExp.addData('text', stroop_text.text)
-            thisExp.addData('corrAns', corrAns) 
-            thisExp.addData('duration', duration)    
-            thisExp.addData('ITI', ITI)
-        
-        
-            thisExp.nextEntry()
-        rep += 1
-     
-    else:
-         for trial in range(len(stim_image)):
-            t = 0
-            overalltime = globalClock.getTime()
-            trialClock.reset()  # clock
-            continueRoutine = True
-        
-            ##------------------SET DURATION & ITI OF STIMULI-------------------##
-            #duration 1000 ms
-            duration = expmatrix_con[4][trial]
-            
-            #ITI jittering 800-2000 ms
-            ITI = expmatrix_con[5][trial]
-        
-            ##---------------------SET STIMULI & RESPONSE---------------------------##
-            Image.setImage(expmatrix_con[0][trial])
-            stim_image = expmatrix_con[0][trial]
-            frequency = expmatrix_con[1][trial]
-            corrAns = expmatrix_con[3][trial]
-            congruency = expmatrix_con[2][trial]
-            
-            if congruency == 'con':
-                if ('m' or 'M') in stim_image:
-                    stroop_text.setText('Male')
-                else:
-                    stroop_text.setText('Female')
+for trial in range(len(expmatrix)):
+    t = 0
+    overalltime = globalClock.getTime()
+    trialClock.reset()  # clock
+    continueRoutine = True
+
+    ##------------------SET DURATION & ITI OF STIMULI-------------------##
+    #duration 1000 ms
+    duration = expmatrix.loc[trial,'Duration']
+    
+    #ITI jittering 800-2000 ms
+    ITI = expmatrix.loc[trial,'ITI']
+
+    ##---------------------SET STIMULI & RESPONSE---------------------------##
+    Image.setImage(expmatrix.loc[trial,'stim_image'])
+    stim_image = expmatrix.loc[trial,'stim_image']
+    frequency = expmatrix.loc[trial,'Frequency']
+    corrAns = expmatrix.loc[trial,'corrAns']
+    congruency = expmatrix.loc[trial,'Congruency']
+    
+    if congruency != 'N/A':
+        if congruency == 'con':
+            if ('m' or 'M') in stim_image:
+                 stroop_text.setText('Male')
             else:
-                if ('m' or 'M') in stim_image:
-                    stroop_text.setText('Female')
-                else:
-                    stroop_text.setText('Male')
-
-
-        
-            ##--------------------------WHILE LOOP BEGINS-------------------------##
-            while continueRoutine:
-                if event.getKeys(keyList=["escape"]):
-                    core.quit()
-                # get current time
-                t = trialClock.getTime()
-                key_resp = event.BuilderKeyResponse()
-        
-                ##--------------------STIMULI PRESENTATION-------------------------------##
-                
-                if trialClock.getTime() < ITI:
-                     Blank.setAutoDraw(True)
-                elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
-                     Blank.setAutoDraw(False)
-                     stroop_text.setAutoDraw(True)
-                     Image.setAutoDraw(True)
-        
-                else:
-                     Image.setAutoDraw(False)
-                     Blank.setAutoDraw(False)
-                     stroop_text.setAutoDraw(False)
-                     continueRoutine = False
-                #print(continueRoutine)
-        
-        
-                theseKeys = event.getKeys(keyList=['w', 'o'])       
-                if len(theseKeys) > 0 and trialClock.getTime() < ITI + duration:# at least one key was pressed
-                    if theseKeys[-1] != None:
-                         key_resp.rt = key_resp.clock.getTime()
-                         thisExp.addData('Response', theseKeys[-1])
-                         thisExp.addData('RT', key_resp.rt)
-                
-                    # was this 'correct'?
-                    if str(corrAns) in theseKeys:
-                         key_resp.corr = 1
-                         thisExp.addData('Accuracy', key_resp.corr)
-                    else:
-                         key_resp.corr = 0
-                         thisExp.addData('Accuracy', key_resp.corr)
-        
-                    # a response ends the routine
-                    Image.setAutoDraw(False)
-                    Blank.setAutoDraw(False)
-                    stroop_text.setAutoDraw(False)
-                    continueRoutine = False
-                    #print(continueRoutine)
-            
-                ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
-        
-                if continueRoutine:
-                     win.flip()
-                else:
-                     break
-        ##--------------------------RECORD DATA-------------------------------##
-            trialcounter += 1
-            thisExp.addData('Trial',trialcounter)
-            thisExp.addData('stim_image', stim_image)
-            thisExp.addData('frequency', frequency)
-            thisExp.addData('congruency', congruency) 
-            thisExp.addData('text', stroop_text.text)
-            thisExp.addData('corrAns', corrAns) 
-            thisExp.addData('duration', duration)    
-            thisExp.addData('ITI', ITI)
-        
-        
-            thisExp.nextEntry()
-else:
-    if rep == 0:
-        for trial in range(len(stim_image)):
-                t = 0
-                overalltime = globalClock.getTime()
-                trialClock.reset()  # clock
-                continueRoutine = True
-            
-                ##------------------SET DURATION & ITI OF STIMULI-------------------##
-                #duration 1000 ms
-                duration = expmatrix_con[4][trial]
-                
-                #ITI jittering 800-2000 ms
-                ITI = expmatrix_con[5][trial]
-            
-                ##---------------------SET STIMULI & RESPONSE---------------------------##
-                Image.setImage(expmatrix_con[0][trial])
-                stim_image = expmatrix_con[0][trial]
-                frequency = expmatrix_con[1][trial]
-                corrAns = expmatrix_con[3][trial]
-                congruency = expmatrix_con[2][trial]
-                
-                if congruency == 'con':
-                    if ('m' or 'M') in stim_image:
-                        stroop_text.setText('Male')
-                    else:
-                        stroop_text.setText('Female')
-                else:
-                    if ('m' or 'M') in stim_image:
-                        stroop_text.setText('Female')
-                    else:
-                        stroop_text.setText('Male')
-    
-    
-            
-                ##--------------------------WHILE LOOP BEGINS-------------------------##
-                while continueRoutine:
-                    if event.getKeys(keyList=["escape"]):
-                        core.quit()
-                    # get current time
-                    t = trialClock.getTime()
-                    key_resp = event.BuilderKeyResponse()
-            
-                    ##--------------------STIMULI PRESENTATION-------------------------------##
-                    
-                    if trialClock.getTime() < ITI:
-                         Blank.setAutoDraw(True)
-                    elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
-                         Blank.setAutoDraw(False)
-                         stroop_text.setAutoDraw(True)
-                         Image.setAutoDraw(True)
-            
-                    else:
-                         Image.setAutoDraw(False)
-                         Blank.setAutoDraw(False)
-                         stroop_text.setAutoDraw(False)
-                         continueRoutine = False
-                    #print(continueRoutine)
-            
-            
-                    theseKeys = event.getKeys(keyList=['w', 'o'])       
-                    if len(theseKeys) > 0 and trialClock.getTime() < ITI + duration:# at least one key was pressed
-                        if theseKeys[-1] != None:
-                             key_resp.rt = key_resp.clock.getTime()
-                             thisExp.addData('Response', theseKeys[-1])
-                             thisExp.addData('RT', key_resp.rt)
-                    
-                        # was this 'correct'?
-                        if str(corrAns) in theseKeys:
-                             key_resp.corr = 1
-                             thisExp.addData('Accuracy', key_resp.corr)
-                        else:
-                             key_resp.corr = 0
-                             thisExp.addData('Accuracy', key_resp.corr)
-            
-                        # a response ends the routine
-                        Image.setAutoDraw(False)
-                        Blank.setAutoDraw(False)
-                        stroop_text.setAutoDraw(False)
-                        continueRoutine = False
-                        #print(continueRoutine)
-                
-                    ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
-            
-                    if continueRoutine:
-                         win.flip()
-                    else:
-                         break
-            ##--------------------------RECORD DATA-------------------------------##
-                trialcounter += 1
-                thisExp.addData('Trial',trialcounter)
-                thisExp.addData('stim_image', stim_image)
-                thisExp.addData('frequency', frequency)
-                thisExp.addData('congruency', congruency) 
-                thisExp.addData('text', stroop_text.text)
-                thisExp.addData('corrAns', corrAns) 
-                thisExp.addData('duration', duration)    
-                thisExp.addData('ITI', ITI)
-            
-            
-                thisExp.nextEntry()
-        rep += 1
-     
+                 stroop_text.setText('Female')
+        else:
+            if ('m' or 'M') in stim_image:
+                 stroop_text.setText('Female')
+            else:
+                 stroop_text.setText('Male')
     else:
-        ##------------------------------START TRIALS FOR LOOPS----------------------------------##
-        for trial in range(len(stim_image)):
-            t = 0
-            overalltime = globalClock.getTime()
-            trialClock.reset()  # clock
-            continueRoutine = True
-        
-            ##------------------SET DURATION & ITI OF STIMULI-------------------##
-            #duration 1000 ms
-            duration = expmatrix_non[3][trial]
-            
-            #ITI jittering 800-2000 ms
-            ITI = expmatrix_non[4][trial]
-        
-            ##---------------------SET STIMULI & RESPONSE---------------------------##
-            Image.setImage(expmatrix_non[0][trial])
-            stim_image = expmatrix_non[0][trial]
-            frequency = expmatrix_non[1][trial]
-            corrAns = expmatrix_non[2][trial]
+         pass
 
-            
+
+
+    ##--------------------------WHILE LOOP BEGINS-------------------------##
+    while continueRoutine:
+        if event.getKeys(keyList=["escape"]):
+            core.quit()
+        # get current time
+        t = trialClock.getTime()
+        key_resp = event.BuilderKeyResponse()
+
+        ##--------------------STIMULI PRESENTATION-------------------------------##
         
-            ##--------------------------WHILE LOOP BEGINS-------------------------##
-            while continueRoutine:
-                if event.getKeys(keyList=["escape"]):
-                    core.quit()
-                # get current time
-                t = trialClock.getTime()
-                key_resp = event.BuilderKeyResponse()
+        if trialClock.getTime() < ITI:
+             Blank.setAutoDraw(True)
+        elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
+             Blank.setAutoDraw(False)
+             if congruency != 'N/A':
+                 stroop_text.setAutoDraw(True)
+             else:
+                 pass
+             Image.setAutoDraw(True)
+
+        else:
+             Image.setAutoDraw(False)
+             Blank.setAutoDraw(False)
+             if congruency != 'N/A':
+                 stroop_text.setAutoDraw(False)
+             else:
+                 pass
+             continueRoutine = False
+        #print(continueRoutine)
+
+
+        theseKeys = event.getKeys(keyList=['w', 'o'])       
+        if len(theseKeys) > 0 and trialClock.getTime() < ITI + duration:# at least one key was pressed
+            if theseKeys[-1] != None:
+                 key_resp.rt = key_resp.clock.getTime()
+                 thisExp.addData('Response', theseKeys[-1])
+                 thisExp.addData('RT', key_resp.rt)
         
-                ##--------------------STIMULI PRESENTATION-------------------------------##
-                
-                if trialClock.getTime() < ITI:
-                     Blank.setAutoDraw(True)
-                elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
-                     Blank.setAutoDraw(False)
-                     stroop_text.setAutoDraw(True)
-                     Image.setAutoDraw(True)
-        
-                else:
-                     Image.setAutoDraw(False)
-                     Blank.setAutoDraw(False)
-                     stroop_text.setAutoDraw(False)
-                     continueRoutine = False
-                #print(continueRoutine)
-        
-        
-                theseKeys = event.getKeys(keyList=['w', 'o'])       
-                if len(theseKeys) > 0 and trialClock.getTime() < ITI + duration:# at least one key was pressed
-                    if theseKeys[-1] != None:
-                         key_resp.rt = key_resp.clock.getTime()
-                         thisExp.addData('Response', theseKeys[-1])
-                         thisExp.addData('RT', key_resp.rt)
-                
-                    # was this 'correct'?
-                    if str(corrAns) in theseKeys:
-                         key_resp.corr = 1
-                         thisExp.addData('Accuracy', key_resp.corr)
-                    else:
-                         key_resp.corr = 0
-                         thisExp.addData('Accuracy', key_resp.corr)
-        
-                    # a response ends the routine
-                    Image.setAutoDraw(False)
-                    Blank.setAutoDraw(False)
-                    stroop_text.setAutoDraw(False)
-                    continueRoutine = False
-                    #print(continueRoutine)
-            
-                ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
-        
-                if continueRoutine:
-                     win.flip()
-                else:
-                     break
-        ##--------------------------RECORD DATA-------------------------------##
-            trialcounter += 1
-            thisExp.addData('Trial',trialcounter)
-            thisExp.addData('stim_image', stim_image)
-            thisExp.addData('frequency', frequency)
-            thisExp.addData('congruency', congruency) 
-            thisExp.addData('text', stroop_text.text)
-            thisExp.addData('corrAns', corrAns) 
-            thisExp.addData('duration', duration)    
-            thisExp.addData('ITI', ITI)
-        
-        
-            thisExp.nextEntry()
+            # was this 'correct'?
+            if str(corrAns) in theseKeys:
+                 key_resp.corr = 1
+                 thisExp.addData('Accuracy', key_resp.corr)
+            else:
+                 key_resp.corr = 0
+                 thisExp.addData('Accuracy', key_resp.corr)
+
+            # a response ends the routine
+            Image.setAutoDraw(False)
+            Blank.setAutoDraw(False)
+            if congruency != 'N/A':
+                stroop_text.setAutoDraw(False)
+            else:
+                 pass
+            continueRoutine = False
+            #print(continueRoutine)
+    
+        ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
+
+        if continueRoutine:
+             win.flip()
+        else:
+             break
+##--------------------------RECORD DATA-------------------------------##
+    trialcounter += 1
+    thisExp.addData('Trial',trialcounter)
+    thisExp.addData('stim_image', stim_image)
+    thisExp.addData('frequency', frequency)
+    thisExp.addData('congruency', congruency) 
+    thisExp.addData('text', stroop_text.text)
+    thisExp.addData('corrAns', corrAns) 
+    thisExp.addData('duration', duration)    
+    thisExp.addData('ITI', ITI)
+
+
+    thisExp.nextEntry()
+
 
 
 event.clearEvents(eventType='keyboard')
