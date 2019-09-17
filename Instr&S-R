@@ -1,0 +1,35 @@
+# S-R mapping is different from exp version so needs a new number generator #
+
+# 0 --> female w, male o; 1 --> female o, male w
+Ans_version = choice([0,1])
+SR = ['w','o'] if Ans_version==0 else ['o','w']
+
+corrAns_stim_image1 = []
+corrAns_stim_image2 = []
+
+if Ans_version==0:
+    SR = ['w','o']
+    for i in stim_image1:
+        if ('m' or 'M') in i:
+            corrAns_stim_image1.append(SR[1])
+        else:
+            corrAns_stim_image1.append(SR[0])
+else:
+    SR = ['o','w']
+    for i in stim_image2:
+        if ('m' or 'M') in i:
+            corrAns_stim_image2.append(SR[1])
+        else:
+            corrAns_stim_image2.append(SR[0])
+            
+# create a .txt file for instruction instead of writing everything in the code #
+# In this experiment, you will see a series of face images...Press + SR[ if the image shows a female face and o if it shows a male face...Press the spacebar to continue.')
+lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CCLTaskIns.txt"))]
+if Ans_version == 0
+    lines.append('Press' + SR[0] + 'if the image shows a female face and' + SR[1] + 'if it shows a male face')
+else:
+    lines.append('Press' + SR[0] + 'if the image shows a male face and' + SR[1] + 'if it shows a female face')
+
+
+
+
