@@ -47,8 +47,58 @@ trialClock = core.Clock() #unlike globalclock, gets reset each trial
 
 
 ##########Instruction##########
-Instr_1 = visual.TextStim(win=win, name='Instr_1', color='black',
-    text='Please read these instructions carefully before you begin the experiment. Press the spacebar to continue.')
+  
+# S-R mapping is different from exp version so needs a new number generator #
+
+# 0 --> female w, male o; 1 --> female o, male w
+Ans_version = choice([0,1])
+SR = ['w','o'] if Ans_version==0 else ['o','w']
+
+corrAns_stim_image1 = []
+corrAns_stim_image2 = []
+
+if Ans_version==0:
+    SR = ['w','o']
+    for i in stim_image1:
+        if ('m' or 'M') in i:
+            corrAns_stim_image1.append(SR[1])
+        else:
+            corrAns_stim_image1.append(SR[0])
+else:
+    SR = ['o','w']
+    for i in stim_image2:
+        if ('m' or 'M') in i:
+            corrAns_stim_image2.append(SR[1])
+        else:
+            corrAns_stim_image2.append(SR[0])
+            
+# create a .txt file for instruction instead of writing everything in the code #
+
+# Beginning Instr
+lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin.txt"))]
+if version == 1:
+    lines.append('A word will also be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
+else:
+    pass
+    
+if Ans_version == 0
+    lines.append('Press' + SR[0] + 'if the image shows a female face and' + SR[1] + 'if it shows a male face.')
+else:
+    lines.append('Press' + SR[0] + 'if the image shows a male face and' + SR[1] + 'if it shows a female face.')
+lines.append("Memorize that task's rule and press space bar to begin.")
+
+# Mid-way Instr (task change)
+lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
+if version == 0
+    lines.append('This time, a word will be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
+else:
+    lines.append('This time, the word will no longer be shown on top of the images. Your task is still to categorize the face image.')
+lines.append("Please memorize the task rule and press the space bar to begin.")
+
+
+
+#Instr_1 = visual.TextStim(win=win, name='Instr_1', color='black',
+#    text='Please read these instructions carefully before you begin the experiment. Press the spacebar to continue.')
 
 Instr_2 = visual.TextStim(win=win, name='Instr_2', color='black',
     text='In this experiment, you will see a series of face images...Press w if the image shows a female face and o if it shows a male face...Press the spacebar to continue.')
@@ -76,6 +126,7 @@ os.chdir('..')
 
 os.chdir(current_working_directory + '/Stimuli_faces2')
 Imagelist2 = list(os.listdir())
+
 
 Image = visual.ImageStim(win=win, name='Image', 
     image='\\Users\\zz112\\Documents\\CCL\\Stimuli_faces1\\CK_f_01.jpg', mask=None,
@@ -133,51 +184,54 @@ frequency = ['high']*80 + ['medium']*80 + ['low']*80
 congruency_con = ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40
 congruency_non = ['N/A']*240
 
-##########Exp Matrix##########
-image_set = [stim_image1,stim_image2]
-random.shuffle(image_set)
-print(len(image_set[0]))
-
 
 ##########corrAns##########
 corrAns_stim_image1 = []
 for i in stim_image1:
     if ('m' or 'M') in i:
-        corrAns.append('w')
+        corrAns_stim_image1.append('w')
     else:
-        corrAns.append('o')
+        corrAns_stim_image1.append('o')
 
 corrAns_stim_image2 = []
 for i in stim_image2:
     if ('m' or 'M') in i:
-        corrAns.append('w')
+        corrAns_stim_image2.append('w')
     else:
-        corrAns.append('o')
+        corrAns_stim_image2.append('o')
+corrAns = [corrAns_stim_image1, corrAns_stim_image2]
+
+##########Exp Matrix##########
+image_set = [stim_image1,stim_image2]
+z = list(zip(image_set, corrAns))
+random.shuffle(z)
+image_set[:],corrAns[:] = zip(*z)
+#print(image_set[0])
+#print(corrAns[0])
+print(len(z))
 
 #Turn Exp Matrix into df to randomize rows
-expmatrix_non = [image_set[0], frequency, congruency_non, corrAns, duration, ITI]
+expmatrix_non = [image_set[0], frequency, congruency_non, corrAns[0], duration, ITI]
 expmatrix_non = pd.DataFrame(expmatrix_non)
 expmatrix_non = expmatrix_non.transpose()
 expmatrix_non.columns = ['stim_image','Frequency','Congruency','corrAns','Duration','ITI']
 expmatrix_non = expmatrix_non.sample(frac=1).reset_index(drop=True)
 
-expmatrix_con = [image_set[1], frequency, congruency_con, corrAns, duration, ITI]
+expmatrix_con = [image_set[1], frequency, congruency_con, corrAns[1], duration, ITI]
 expmatrix_con = pd.DataFrame(expmatrix_con)
 expmatrix_con = expmatrix_con.transpose()
 expmatrix_con.columns = ['stim_image','Frequency','Congruency','corrAns','Duration','ITI']
 expmatrix_con = expmatrix_con.sample(frac=1).reset_index(drop=True)
-#print (expmatrix_con)
-#print(len(expmatrix_con))
 
 
 
 if version == '1':
-    expmatrix = pd.concat([expmatrix_non , expmatrix_con])
+    expmatrix = pd.concat([expmatrix_non , expmatrix_con],ignore_index=True)
 else:
-    expmatrix = pd.concat([expmatrix_con , expmatrix_non])
+    expmatrix = pd.concat([expmatrix_con , expmatrix_non],ignore_index=True)
 
-print (expmatrix)
-print (len(expmatrix))
+#print (expmatrix)
+#print (expmatrix.size)
 
 
 
@@ -224,8 +278,8 @@ for trial in range(len(expmatrix)):
     ITI = expmatrix.loc[trial,'ITI']
 
     ##---------------------SET STIMULI & RESPONSE---------------------------##
-    Image.setImage(expmatrix.loc[trial,'stim_image'])
     stim_image = expmatrix.loc[trial,'stim_image']
+    Image.setImage(stim_image)
     frequency = expmatrix.loc[trial,'Frequency']
     corrAns = expmatrix.loc[trial,'corrAns']
     congruency = expmatrix.loc[trial,'Congruency']
