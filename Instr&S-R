@@ -23,13 +23,26 @@ else:
             corrAns_stim_image2.append(SR[0])
             
 # create a .txt file for instruction instead of writing everything in the code #
-# In this experiment, you will see a series of face images...Press + SR[ if the image shows a female face and o if it shows a male face...Press the spacebar to continue.')
-lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CCLTaskIns.txt"))]
-if Ans_version == 0
-    lines.append('Press' + SR[0] + 'if the image shows a female face and' + SR[1] + 'if it shows a male face')
+
+# Beginning Instr
+lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin.txt"))]
+if version == 1:
+    lines.append('A word will also be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
 else:
-    lines.append('Press' + SR[0] + 'if the image shows a male face and' + SR[1] + 'if it shows a female face')
+    pass
+    
+if Ans_version == 0
+    lines.append('Press' + SR[0] + 'if the image shows a female face and' + SR[1] + 'if it shows a male face.')
+else:
+    lines.append('Press' + SR[0] + 'if the image shows a male face and' + SR[1] + 'if it shows a female face.')
+lines.append("Memorize that task's rule and press space bar to begin.")
 
-
+# Mid-way Instr (task change)
+lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
+if version == 0
+    lines.append('This time, a word will be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
+else:
+    lines.append('This time, the word will no longer be shown on top of the images. Your task is still to categorize the face image.')
+lines.append("Please memorize the task rule and press the space bar to begin.")
 
 
