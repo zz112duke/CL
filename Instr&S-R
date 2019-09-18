@@ -45,4 +45,10 @@ else:
     lines.append('This time, the word will no longer be shown on top of the images. Your task is still to categorize the face image.')
 lines.append("Please memorize the task rule and press the space bar to begin.")
 
+that's why maybe you want to generate a condition file for every subj first so it won't mess up with your cwd
+if first set of image is from set1:
+        os.chdir('..')
+else:
+        pass
+
 
