@@ -14,6 +14,8 @@ from operator import itemgetter
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
 current_working_directory = os.getcwd()
+# include paths to bin in order to create a subject specific trial sequence
+binDir = _thisDir + os.sep + u'bin'
 
 # Store info about the experiment session
 expName = 'CCL_C'  # from the Builder filename that created this script
@@ -46,71 +48,6 @@ globalClock = core.MonotonicClock() # to track the time since experiment started
 trialClock = core.Clock() #unlike globalclock, gets reset each trial
 
 
-##########Instruction##########
-  
-# S-R mapping is different from exp version so needs a new number generator #
-
-# 0 --> female w, male o; 1 --> female o, male w
-Ans_version = choice([0,1])
-SR = ['w','o'] if Ans_version==0 else ['o','w']
-
-corrAns_stim_image1 = []
-corrAns_stim_image2 = []
-
-if Ans_version==0:
-    SR = ['w','o']
-    for i in stim_image1:
-        if ('m' or 'M') in i:
-            corrAns_stim_image1.append(SR[1])
-        else:
-            corrAns_stim_image1.append(SR[0])
-else:
-    SR = ['o','w']
-    for i in stim_image2:
-        if ('m' or 'M') in i:
-            corrAns_stim_image2.append(SR[1])
-        else:
-            corrAns_stim_image2.append(SR[0])
-            
-# create a .txt file for instruction instead of writing everything in the code #
-
-# Beginning Instr
-lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin.txt"))]
-if version == 1:
-    lines.append('A word will also be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
-else:
-    pass
-    
-if Ans_version == 0
-    lines.append('Press' + SR[0] + 'if the image shows a female face and' + SR[1] + 'if it shows a male face.')
-else:
-    lines.append('Press' + SR[0] + 'if the image shows a male face and' + SR[1] + 'if it shows a female face.')
-lines.append("Memorize that task's rule and press space bar to begin.")
-
-# Mid-way Instr (task change)
-lines = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
-if version == 0
-    lines.append('This time, a word will be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
-else:
-    lines.append('This time, the word will no longer be shown on top of the images. Your task is still to categorize the face image.')
-lines.append("Please memorize the task rule and press the space bar to begin.")
-
-
-
-#Instr_1 = visual.TextStim(win=win, name='Instr_1', color='black',
-#    text='Please read these instructions carefully before you begin the experiment. Press the spacebar to continue.')
-
-Instr_2 = visual.TextStim(win=win, name='Instr_2', color='black',
-    text='In this experiment, you will see a series of face images...Press w if the image shows a female face and o if it shows a male face...Press the spacebar to continue.')
-
-Blank = visual.TextStim(win=win, name='blank', text='h', 
-    font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
-    color=u'black', colorSpace='rgb', opacity=0, depth=0.0)
-
-Ending = visual.TextStim(win=win, name='Instr_1', color='black',
-    text='Thank you for participating in this study. Press the spacebar to quit.')
-
-
 
 ##########Version##########
 # version 1 [non,con] version 2 [con,non]
@@ -140,6 +77,12 @@ stroop_text =visual.TextStim(win=win, name='stroop_text',
     color=u'red', colorSpace='rgb', opacity=2,
     depth=0)
 
+Blank = visual.TextStim(win=win, name='blank', text='h', 
+    font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
+    color=u'black', colorSpace='rgb', opacity=0, depth=0.0)
+
+Ending = visual.TextStim(win=win, name='Instr_1', color='black',
+    text='Thank you for participating in this study. Press the spacebar to quit.')
 
 ###Indexing Image###
 # index the images for high, medium and low frequencies for later selection
@@ -234,6 +177,64 @@ else:
 #print (expmatrix.size)
 
 
+##########Instruction##########
+  
+# S-R mapping is different from exp version so needs a new number generator #
+
+# 0 --> female w, male o; 1 --> female o, male w
+Ans_version = random.choice([0,1])
+SR = ['w','o'] if Ans_version==0 else ['o','w']
+
+corrAns_stim_image1 = []
+corrAns_stim_image2 = []
+
+if Ans_version==0:
+    SR = ['w','o']
+    for i in stim_image1:
+        if ('m' or 'M') in i:
+            corrAns_stim_image1.append(SR[1])
+        else:
+            corrAns_stim_image1.append(SR[0])
+else:
+    SR = ['o','w']
+    for i in stim_image2:
+        if ('m' or 'M') in i:
+            corrAns_stim_image2.append(SR[1])
+        else:
+            corrAns_stim_image2.append(SR[0])
+
+# Beginning Instr
+lines_begin = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin.txt"))]
+if version == 1:
+    lines_begin.append('A word will also be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
+else:
+    pass
+print(lines_begin)
+
+
+if Ans_version == 0:
+    lines_begin.append('Press' + SR[0] + 'if the image shows a female face and' + SR[1] + 'if it shows a male face.')
+else:
+    lines_begin.append('Press' + SR[0] + 'if the image shows a male face and' + SR[1] + 'if it shows a female face.')
+lines_begin.append("Memorize that task's rule and press space bar to begin.")
+print(lines_begin)
+
+# Mid-way Instr (task change)
+lines_mid = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
+if version == 0:
+    lines_mid.append('This time, a word will be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
+else:
+    lines_mid.append('This time, the word will no longer be shown on top of the images. Your task is still to categorize the face image.')
+lines_mid.append("Please memorize the task rule and press the space bar to begin.")
+print(lines_mid)
+
+
+Instr_1 = visual.TextStim(win=win, name='Instr_1', color='black',
+    text=lines_begin)
+
+
+
+
 
 
 ##----------------------------------------------------------------------------##
@@ -246,19 +247,15 @@ else:
 Instr_1.setAutoDraw(True)
 
 advance = 0
-while advance < 2:
+while advance < 1:
     if event.getKeys(keyList=["space"]):
         advance += 1
     if advance == 1:
         Instr_1.setAutoDraw(False)
-        Instr_2.setAutoDraw(True)
-    else:
-        Instr_2.setAutoDraw(False)
 
     if event.getKeys(keyList=["escape"]):
         core.quit()
     win.flip()
-
 
 ##------------------------------START THE EXPERIMENT----------------------------------##
 theseKeys = []
