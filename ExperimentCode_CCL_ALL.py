@@ -231,7 +231,8 @@ lines_mid.append("Please memorize the task rule and press the space bar to begin
 
 Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black',
     text=(' '.join(map(str, lines_begin))))
-
+Instr_2 = visual.TextStim(win=win, name='Instr_2 ', color='black',
+    text=(' '.join(map(str, lines_mid))))
 
 
 
@@ -370,6 +371,9 @@ for trial in range(len(expmatrix)):
         
     thisExp.nextEntry()
     #if trialcounter == 240:
+        #Instr_2.setAutoDraw(True)
+        #if len(event.getKeys(keyList=["space"])) != 0:
+            #Instr_2.setAutoDraw(False)
 
 
 
