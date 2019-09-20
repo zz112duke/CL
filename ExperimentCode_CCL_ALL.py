@@ -13,12 +13,11 @@ from operator import itemgetter
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_thisDir)
-current_working_directory = os.getcwd()
 # include paths to bin in order to create a subject specific trial sequence
 binDir = _thisDir + os.sep + u'bin'
 
 # Store info about the experiment session
-expName = 'CCL_C'  # from the Builder filename that created this script
+expName = 'CCL'  # from the Builder filename that created this script
 expInfo = {'participant':'','session':'001'}
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -51,25 +50,30 @@ trialClock = core.Clock() #unlike globalclock, gets reset each trial
 
 ##########Version##########
 # version 1 [non,con] version 2 [con,non]
-version = ['1','2']
-current_version = random.choice(version)
-
+version = random.choice([1,2])
+print (version)
 
 
 ##########Stimuli##########
-os.chdir(current_working_directory + '/Stimuli_faces1')
+os.chdir(_thisDir + '/Stimuli_faces1')
 Imagelist1 = list(os.listdir())
-os.chdir('..')
+os.chdir(_thisDir)
+Imagelist1 = [_thisDir + "/Stimuli_faces1/" + i for i in Imagelist1]
+#print(Imagelist1)
 
-os.chdir(current_working_directory + '/Stimuli_faces2')
+
+os.chdir(_thisDir + '/Stimuli_faces2')
 Imagelist2 = list(os.listdir())
+os.chdir(_thisDir)
+Imagelist2 = [_thisDir + "/Stimuli_faces2/" + i for i in Imagelist2]
+
+
 
 
 Image = visual.ImageStim(win=win, name='Image', 
-    image='\\Users\\zz112\\Documents\\CCL\\Stimuli_faces1\\CK_f_01.jpg', mask=None,
-    ori=0, pos=(0, 0), opacity=0.7, texRes=128, depth=0.0,
-    size=(1, 1), interpolate = True)
-
+    image= _thisDir + '/Stimuli_faces1/CK_f_01.jpg', mask=None,
+    ori=0, pos=(0, 0), opacity=1, texRes=128, depth=0.0,
+    size=(0.75, 1), interpolate = True)
 
 stroop_text =visual.TextStim(win=win, name='stroop_text',
     text='default',font=u'Arial',
@@ -82,7 +86,7 @@ Blank = visual.TextStim(win=win, name='blank', text='h',
     color=u'black', colorSpace='rgb', opacity=0, depth=0.0)
 
 Ending = visual.TextStim(win=win, name='Instr_1', color='black',
-    text='Thank you for participating in this study. Press the spacebar to quit.')
+    text='Thank you for participating in this study. Press the spacebar to quit and call over the researcher for a post-task.')
 
 ###Indexing Image###
 # index the images for high, medium and low frequencies for later selection
@@ -108,7 +112,7 @@ stim_image2 = stim_image_high2 +stim_image_medium2 + stim_image_low2
 
 ##########Timing##########
 trials = 240
-duration = 3.0
+duration = 1.0
 ITI_min = 800.0
 ITI_max = 2000.0
 
@@ -151,7 +155,7 @@ random.shuffle(z)
 image_set[:],corrAns[:] = zip(*z)
 #print(image_set[0])
 #print(corrAns[0])
-print(len(z))
+#print(len(z))
 
 #Turn Exp Matrix into df to randomize rows
 expmatrix_non = [image_set[0], frequency, congruency_non, corrAns[0], duration, ITI]
@@ -168,7 +172,7 @@ expmatrix_con = expmatrix_con.sample(frac=1).reset_index(drop=True)
 
 
 
-if version == '1':
+if version == 1:
     expmatrix = pd.concat([expmatrix_non , expmatrix_con],ignore_index=True)
 else:
     expmatrix = pd.concat([expmatrix_con , expmatrix_non],ignore_index=True)
@@ -183,20 +187,19 @@ else:
 
 # 0 --> female w, male o; 1 --> female o, male w
 Ans_version = random.choice([0,1])
-SR = ['w','o'] if Ans_version==0 else ['o','w']
 
 corrAns_stim_image1 = []
 corrAns_stim_image2 = []
 
 if Ans_version==0:
-    SR = ['w','o']
+    SR = ['W','O']
     for i in stim_image1:
         if ('m' or 'M') in i:
             corrAns_stim_image1.append(SR[1])
         else:
             corrAns_stim_image1.append(SR[0])
 else:
-    SR = ['o','w']
+    SR = ['O','W']
     for i in stim_image2:
         if ('m' or 'M') in i:
             corrAns_stim_image2.append(SR[1])
@@ -205,32 +208,29 @@ else:
 
 # Beginning Instr
 lines_begin = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin.txt"))]
-if version == 1:
-    lines_begin.append('A word will also be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
+if version == 2:
+    lines_begin.append('A word will also be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image.')
 else:
     pass
-print(lines_begin)
 
 
 if Ans_version == 0:
-    lines_begin.append('Press' + SR[0] + 'if the image shows a female face and' + SR[1] + 'if it shows a male face.')
+    lines_begin.append('Press' + ' ' + SR[0] + ' ' + 'if the image shows a female face and' + ' ' + SR[1] + ' '+ 'if it shows a male face.')
 else:
-    lines_begin.append('Press' + SR[0] + 'if the image shows a male face and' + SR[1] + 'if it shows a female face.')
-lines_begin.append("Memorize that task's rule and press space bar to begin.")
-print(lines_begin)
+    lines_begin.append('Press' + ' ' + SR[0] + ' ' + 'if the image shows a male face and' + ' ' + SR[1] + ' ' + 'if it shows a female face.')
+lines_begin.append("Memorize that task rule and press the space bar to begin.")
 
 # Mid-way Instr (task change)
 lines_mid = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
-if version == 0:
+if version == 1:
     lines_mid.append('This time, a word will be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
 else:
     lines_mid.append('This time, the word will no longer be shown on top of the images. Your task is still to categorize the face image.')
 lines_mid.append("Please memorize the task rule and press the space bar to begin.")
-print(lines_mid)
 
 
-Instr_1 = visual.TextStim(win=win, name='Instr_1', color='black',
-    text=lines_begin)
+Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black',
+    text=(' '.join(map(str, lines_begin))))
 
 
 
@@ -325,7 +325,6 @@ for trial in range(len(expmatrix)):
              else:
                  pass
              continueRoutine = False
-        #print(continueRoutine)
 
 
         theseKeys = event.getKeys(keyList=['w', 'o'])       
@@ -351,7 +350,6 @@ for trial in range(len(expmatrix)):
             else:
                  pass
             continueRoutine = False
-            #print(continueRoutine)
     
         ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
 
@@ -369,9 +367,9 @@ for trial in range(len(expmatrix)):
     thisExp.addData('corrAns', corrAns) 
     thisExp.addData('duration', duration)    
     thisExp.addData('ITI', ITI)
-
-
+        
     thisExp.nextEntry()
+    #if trialcounter == 240:
 
 
 
@@ -379,7 +377,7 @@ event.clearEvents(eventType='keyboard')
 Ending.setAutoDraw(True)
 
 
-while len(event.getKeys(keyList=["space"])) != 0:
+if len(event.getKeys(keyList=["space"])) != 0:
      Ending.setAutoDraw(False)
 
 
