@@ -1,3 +1,11 @@
 This folder contains pieces of code that I wrote for testing if the matrix generation, 
 
 middle instruction and separate versions of exp work.
+
+ExperimentCode_CCL_CL.py is the original script that administrates non-control CL version.
+
+ExperimentCode_CCL_C.py is the original script that administrates control CL version.
+
+instr_test.py is for testing how to add middle instruction when moving to the second version.
+
+matrix.py generates exp matrix for each sub, might use later.
