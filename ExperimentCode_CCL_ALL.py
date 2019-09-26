@@ -55,30 +55,28 @@ print (version)
 
 
 ##########Stimuli##########
-os.chdir(_thisDir + '/Stimuli_faces1')
-Imagelist1 = list(os.listdir())
-os.chdir(_thisDir)
-Imagelist1 = [_thisDir + "/Stimuli_faces1/" + i for i in Imagelist1]
+#os.chdir(_thisDir + '/Set1')
+Imagelist1 = list(os.listdir(_thisDir + '/Set1'))
+Imagelist1 = ["Set1/" + i for i in Imagelist1]
 #print(Imagelist1)
 
 
-os.chdir(_thisDir + '/Stimuli_faces2')
-Imagelist2 = list(os.listdir())
-os.chdir(_thisDir)
-Imagelist2 = [_thisDir + "/Stimuli_faces2/" + i for i in Imagelist2]
+#os.chdir(_thisDir + '/Set2')
+Imagelist2 = list(os.listdir(_thisDir + '/Set2'))
+Imagelist2 = ["Set2/" + i for i in Imagelist2]
 
 
 
 
 Image = visual.ImageStim(win=win, name='Image', 
-    image= _thisDir + '/Stimuli_faces1/CK_f_01.jpg', mask=None,
-    ori=0, pos=(0, 0), opacity=1, texRes=128, depth=0.0,
+    image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
+    ori=0, pos=(0, 0), opacity=1, texRes=128, depth=0,
     size=(0.75, 1), interpolate = True)
 
 stroop_text =visual.TextStim(win=win, name='stroop_text',
     text='default',font=u'Arial',
-    pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
-    color=u'red', colorSpace='rgb', opacity=2,
+    pos=(0, 0), height=0.2, wrapWidth=None, ori=0, 
+    color=u'red', colorSpace='rgb', opacity=1,
     depth=0)
 
 Blank = visual.TextStim(win=win, name='blank', text='h', 
@@ -297,6 +295,22 @@ for trial in range(len(expmatrix)):
          pass
 
 
+    if trialcounter == 2:
+            Instr_2.setAutoDraw(True)
+            continueRoutine = True
+            while continueRoutine:
+                if event.getKeys(keyList=["escape"]):
+                    core.quit()
+                if len(event.getKeys(keyList=["space"])) == 0:
+                    win.flip()
+                else:
+                    break
+            Instr_2.setAutoDraw(False)
+            tinstr_2 = trialClock.getTime()
+            #print(tinstr_2)
+    else:
+         pass
+    
 
     ##--------------------------WHILE LOOP BEGINS-------------------------##
     while continueRoutine:
@@ -307,50 +321,86 @@ for trial in range(len(expmatrix)):
         key_resp = event.BuilderKeyResponse()
 
         ##--------------------STIMULI PRESENTATION-------------------------------##
-        
-        if trialClock.getTime() < ITI:
-             Blank.setAutoDraw(True)
-        elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
-             Blank.setAutoDraw(False)
-             if congruency != 'N/A':
-                 stroop_text.setAutoDraw(True)
-             else:
-                 pass
-             Image.setAutoDraw(True)
-
+        if trialcounter == 2:
+            if t > tinstr_2 and t < ITI + tinstr_2:
+                Blank.setAutoDraw(True)
+            elif t > ITI + tinstr_2 and t < ITI + tinstr_2 + duration:
+                Blank.setAutoDraw(False)
+                Image.setAutoDraw(True)
+                if congruency != 'N/A':
+                    stroop_text.setAutoDraw(True)
+                else:
+                    pass
+            else:
+                Image.setAutoDraw(False)
+                Blank.setAutoDraw(False)
+                if congruency != 'N/A':
+                    stroop_text.setAutoDraw(False)
+                else:
+                    pass
+                continueRoutine = False
+                
+            theseKeys = event.getKeys(keyList=['w', 'o'])
+            if len(theseKeys) > 0 and trialClock.getTime() < ITI + tinstr_2 + duration:# at least one key was pressed
+                if theseKeys[-1] != None:
+                     key_resp.rt = key_resp.clock.getTime()
+                     thisExp.addData('Response', theseKeys[-1])
+                     thisExp.addData('RT', key_resp.rt)
+                
+                # was this 'correct'?
+                if str(corrAns) in theseKeys:
+                     key_resp.corr = 1
+                     thisExp.addData('Accuracy', key_resp.corr)
+                else:
+                     key_resp.corr = 0
+                     thisExp.addData('Accuracy', key_resp.corr)
+                Image.setAutoDraw(False)
+                Blank.setAutoDraw(False)
+                continueRoutine = False
         else:
-             Image.setAutoDraw(False)
-             Blank.setAutoDraw(False)
-             if congruency != 'N/A':
-                 stroop_text.setAutoDraw(False)
-             else:
-                 pass
-             continueRoutine = False
-
-
-        theseKeys = event.getKeys(keyList=['w', 'o'])       
-        if len(theseKeys) > 0 and trialClock.getTime() < ITI + duration:# at least one key was pressed
-            if theseKeys[-1] != None:
-                 key_resp.rt = key_resp.clock.getTime()
-                 thisExp.addData('Response', theseKeys[-1])
-                 thisExp.addData('RT', key_resp.rt)
-        
-            # was this 'correct'?
-            if str(corrAns) in theseKeys:
-                 key_resp.corr = 1
-                 thisExp.addData('Accuracy', key_resp.corr)
+            if trialClock.getTime() < ITI:
+                 Blank.setAutoDraw(True)
+            elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
+                 Blank.setAutoDraw(False)
+                 Image.setAutoDraw(True)
+                 if congruency != 'N/A':
+                     stroop_text.setAutoDraw(True)
+                 else:
+                     pass
+    
             else:
-                 key_resp.corr = 0
-                 thisExp.addData('Accuracy', key_resp.corr)
-
-            # a response ends the routine
-            Image.setAutoDraw(False)
-            Blank.setAutoDraw(False)
-            if congruency != 'N/A':
-                stroop_text.setAutoDraw(False)
-            else:
-                 pass
-            continueRoutine = False
+                 Image.setAutoDraw(False)
+                 Blank.setAutoDraw(False)
+                 if congruency != 'N/A':
+                     stroop_text.setAutoDraw(False)
+                 else:
+                     pass
+                 continueRoutine = False
+    
+    
+            theseKeys = event.getKeys(keyList=['w', 'o'])       
+            if len(theseKeys) > 0 and trialClock.getTime() < ITI + duration:# at least one key was pressed
+                if theseKeys[-1] != None:
+                     key_resp.rt = key_resp.clock.getTime()
+                     thisExp.addData('Response', theseKeys[-1])
+                     thisExp.addData('RT', key_resp.rt)
+            
+                # was this 'correct'?
+                if str(corrAns) in theseKeys:
+                     key_resp.corr = 1
+                     thisExp.addData('Accuracy', key_resp.corr)
+                else:
+                     key_resp.corr = 0
+                     thisExp.addData('Accuracy', key_resp.corr)
+    
+                # a response ends the routine
+                Image.setAutoDraw(False)
+                Blank.setAutoDraw(False)
+                if congruency != 'N/A':
+                    stroop_text.setAutoDraw(False)
+                else:
+                     pass
+                continueRoutine = False
     
         ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
 
@@ -370,11 +420,6 @@ for trial in range(len(expmatrix)):
     thisExp.addData('ITI', ITI)
         
     thisExp.nextEntry()
-    #if trialcounter == 240:
-        #Instr_2.setAutoDraw(True)
-        #if len(event.getKeys(keyList=["space"])) != 0:
-            #Instr_2.setAutoDraw(False)
-
 
 
 event.clearEvents(eventType='keyboard')
