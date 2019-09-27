@@ -55,17 +55,13 @@ print (version)
 
 
 ##########Stimuli##########
-#os.chdir(_thisDir + '/Set1')
 Imagelist1 = list(os.listdir(_thisDir + '/Set1'))
 Imagelist1 = ["Set1/" + i for i in Imagelist1]
-#print(Imagelist1)
 
-
-#os.chdir(_thisDir + '/Set2')
 Imagelist2 = list(os.listdir(_thisDir + '/Set2'))
 Imagelist2 = ["Set2/" + i for i in Imagelist2]
 
-
+Practicelist = list(os.listdir(_thisDir + '/Practice'))
 
 
 Image = visual.ImageStim(win=win, name='Image', 
@@ -107,7 +103,6 @@ stim_image_medium2 = [Imagelist2[i] for i in indices_medium]*5
 stim_image_low2 = [Imagelist2[i] for i in indices_low]
 stim_image2 = stim_image_high2 +stim_image_medium2 + stim_image_low2
 
-
 ##########Timing##########
 trials = 240
 duration = 1.0
@@ -130,39 +125,53 @@ congruency_con = ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40 + ['con']
 congruency_non = ['N/A']*240
 
 
-##########corrAns##########
-corrAns_stim_image1 = []
-for i in stim_image1:
-    if ('m' or 'M') in i:
-        corrAns_stim_image1.append('w')
-    else:
-        corrAns_stim_image1.append('o')
+image_set = [stim_image1,stim_image2]
+random.shuffle(image_set)
 
-corrAns_stim_image2 = []
-for i in stim_image2:
-    if ('m' or 'M') in i:
-        corrAns_stim_image2.append('w')
-    else:
-        corrAns_stim_image2.append('o')
-corrAns = [corrAns_stim_image1, corrAns_stim_image2]
+##########corrAns##########
+# S-R mapping is different from exp version so needs a new number generator #
+# 0 --> female w, male o; 1 --> female o, male w
+Ans_version = random.choice([0,1])
+
+corrAns1 = []
+corrAns2 = []
+
+if Ans_version==0:
+    SR = ['w','o']
+    for i in image_set[0]:
+        if ('m' or 'M') in i:
+            corrAns1.append(SR[1])
+        else:
+            corrAns1.append(SR[0])
+    for i in image_set[1]:
+        if ('m' or 'M') in i:
+            corrAns2.append(SR[1])
+        else:
+            corrAns2.append(SR[0])
+else:
+    SR = ['o','w']
+    for i in image_set[0]:
+        if ('m' or 'M') in i:
+            corrAns1.append(SR[1])
+        else:
+            corrAns1.append(SR[0])
+    for i in image_set[1]:
+        if ('m' or 'M') in i:
+            corrAns2.append(SR[1])
+        else:
+            corrAns2.append(SR[0])
+
+
 
 ##########Exp Matrix##########
-image_set = [stim_image1,stim_image2]
-z = list(zip(image_set, corrAns))
-random.shuffle(z)
-image_set[:],corrAns[:] = zip(*z)
-#print(image_set[0])
-#print(corrAns[0])
-#print(len(z))
-
 #Turn Exp Matrix into df to randomize rows
-expmatrix_non = [image_set[0], frequency, congruency_non, corrAns[0], duration, ITI]
+expmatrix_non = [image_set[0], frequency, congruency_non, corrAns1, duration, ITI]
 expmatrix_non = pd.DataFrame(expmatrix_non)
 expmatrix_non = expmatrix_non.transpose()
 expmatrix_non.columns = ['stim_image','Frequency','Congruency','corrAns','Duration','ITI']
 expmatrix_non = expmatrix_non.sample(frac=1).reset_index(drop=True)
 
-expmatrix_con = [image_set[1], frequency, congruency_con, corrAns[1], duration, ITI]
+expmatrix_con = [image_set[1], frequency, congruency_con, corrAns2, duration, ITI]
 expmatrix_con = pd.DataFrame(expmatrix_con)
 expmatrix_con = expmatrix_con.transpose()
 expmatrix_con.columns = ['stim_image','Frequency','Congruency','corrAns','Duration','ITI']
@@ -175,39 +184,19 @@ if version == 1:
 else:
     expmatrix = pd.concat([expmatrix_con , expmatrix_non],ignore_index=True)
 
-#print (expmatrix)
-#print (expmatrix.size)
+#Practice Matrix
+
+
+
+
 
 
 ##########Instruction##########
-  
-# S-R mapping is different from exp version so needs a new number generator #
-
-# 0 --> female w, male o; 1 --> female o, male w
-Ans_version = random.choice([0,1])
-
-corrAns_stim_image1 = []
-corrAns_stim_image2 = []
-
-if Ans_version==0:
-    SR = ['W','O']
-    for i in stim_image1:
-        if ('m' or 'M') in i:
-            corrAns_stim_image1.append(SR[1])
-        else:
-            corrAns_stim_image1.append(SR[0])
-else:
-    SR = ['O','W']
-    for i in stim_image2:
-        if ('m' or 'M') in i:
-            corrAns_stim_image2.append(SR[1])
-        else:
-            corrAns_stim_image2.append(SR[0])
 
 # Beginning Instr
 lines_begin = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin.txt"))]
 if version == 2:
-    lines_begin.append('A word will also be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image.')
+    lines_begin.append('A word will also be presented on top of every face image. \nYour task is to ignore the meaning of the word and still to categorize the gender of the face image.')
 else:
     pass
 
@@ -221,17 +210,21 @@ lines_begin.append("Memorize that task rule and press the space bar to begin.")
 # Mid-way Instr (task change)
 lines_mid = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
 if version == 1:
-    lines_mid.append('This time, a word will be presented on top of every face image. Your task is to ignore the meaning of the word and still to categorize the gender of the face image')
+    lines_mid.append('This time, a word will be presented on top of every face image.\nYour task is to ignore the meaning of the word and still to categorize the gender of the face image')
 else:
-    lines_mid.append('This time, the word will no longer be shown on top of the images. Your task is still to categorize the face image.')
+    lines_mid.append('This time, the word will no longer be shown on top of the images. \nYour task is still to categorize the face image.')
 lines_mid.append("Please memorize the task rule and press the space bar to begin.")
 
+# Practice Instr
+lines_practice = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Practice.txt"))]
+lines_practice.append
 
 Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black',
     text=(' '.join(map(str, lines_begin))))
 Instr_2 = visual.TextStim(win=win, name='Instr_2 ', color='black',
     text=(' '.join(map(str, lines_mid))))
-
+Instr_Practice = visual.TextStim(win=win, name='Instr_Practice', color='black',
+    text=(' '.join(map(str, lines_practice))))
 
 
 
@@ -246,15 +239,29 @@ Instr_2 = visual.TextStim(win=win, name='Instr_2 ', color='black',
 Instr_1.setAutoDraw(True)
 
 advance = 0
-while advance < 1:
+while advance < 2:
     if event.getKeys(keyList=["space"]):
         advance += 1
-    if advance == 1:
+    if event.getKeys(keyList=["space"]):
+        advance += 2
         Instr_1.setAutoDraw(False)
+        Instr_Practice.setAutoDraw(True)
+    if advance == 2:
+        Instr_Practice.setAutoDraw(False)
 
     if event.getKeys(keyList=["escape"]):
         core.quit()
     win.flip()
+
+##---------------------------START Practice-------------------------------## 
+theseKeys = []
+for ptrial in range(len(Practicelist)):
+    t = 0
+    trialClock.reset()
+    continueRoutine = True
+    
+
+
 
 ##------------------------------START THE EXPERIMENT----------------------------------##
 theseKeys = []
@@ -295,7 +302,7 @@ for trial in range(len(expmatrix)):
          pass
 
 
-    if trialcounter == 2:
+    if trialcounter == 240:
             Instr_2.setAutoDraw(True)
             continueRoutine = True
             while continueRoutine:
@@ -321,7 +328,7 @@ for trial in range(len(expmatrix)):
         key_resp = event.BuilderKeyResponse()
 
         ##--------------------STIMULI PRESENTATION-------------------------------##
-        if trialcounter == 2:
+        if trialcounter == 240:
             if t > tinstr_2 and t < ITI + tinstr_2:
                 Blank.setAutoDraw(True)
             elif t > ITI + tinstr_2 and t < ITI + tinstr_2 + duration:
@@ -341,6 +348,9 @@ for trial in range(len(expmatrix)):
                 continueRoutine = False
                 
             theseKeys = event.getKeys(keyList=['w', 'o'])
+            if len(theseKeys) == 0:
+                 key_resp.corr = 0
+                 thisExp.addData('Accuracy', key_resp.corr)
             if len(theseKeys) > 0 and trialClock.getTime() < ITI + tinstr_2 + duration:# at least one key was pressed
                 if theseKeys[-1] != None:
                      key_resp.rt = key_resp.clock.getTime()
@@ -354,13 +364,11 @@ for trial in range(len(expmatrix)):
                 else:
                      key_resp.corr = 0
                      thisExp.addData('Accuracy', key_resp.corr)
-                Image.setAutoDraw(False)
-                Blank.setAutoDraw(False)
-                continueRoutine = False
+
         else:
-            if trialClock.getTime() < ITI:
+            if t < ITI:
                  Blank.setAutoDraw(True)
-            elif trialClock.getTime() > ITI and trialClock.getTime() < ITI + duration:
+            elif t > ITI and t < ITI + duration:
                  Blank.setAutoDraw(False)
                  Image.setAutoDraw(True)
                  if congruency != 'N/A':
@@ -393,15 +401,7 @@ for trial in range(len(expmatrix)):
                      key_resp.corr = 0
                      thisExp.addData('Accuracy', key_resp.corr)
     
-                # a response ends the routine
-                Image.setAutoDraw(False)
-                Blank.setAutoDraw(False)
-                if congruency != 'N/A':
-                    stroop_text.setAutoDraw(False)
-                else:
-                     pass
-                continueRoutine = False
-    
+
         ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
 
         if continueRoutine:
@@ -420,6 +420,14 @@ for trial in range(len(expmatrix)):
     thisExp.addData('ITI', ITI)
         
     thisExp.nextEntry()
+
+#read the exp matrix, read the low frequency especially, since they'll be in every pair.
+
+
+
+
+
+
 
 
 event.clearEvents(eventType='keyboard')
