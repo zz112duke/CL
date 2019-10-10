@@ -254,11 +254,11 @@ while advance < 2:
     win.flip()
 
 ##---------------------------START Practice-------------------------------## 
-theseKeys = []
-for ptrial in range(len(Practicelist)):
-    t = 0
-    trialClock.reset()
-    continueRoutine = True
+#theseKeys = []
+#for ptrial in range(len(Practicelist)):
+#    t = 0
+#    trialClock.reset()
+#    continueRoutine = True
     
 
 
