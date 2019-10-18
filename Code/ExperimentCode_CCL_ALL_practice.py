@@ -83,15 +83,24 @@ Blank = visual.TextStim(win=win, name='blank', text='h',
 
 Correct =visual.TextStim(win=win, name='Correct',
     text='Correct',font=u'Arial',
-    pos=(0, 0), height=0.2, wrapWidth=None, ori=0, 
-    color=u'black', colorSpace='rgb', opacity=1,
+    pos=(0, -0.75), height=0.2, wrapWidth=None, ori=0, 
+    color=u'red', colorSpace='rgb', opacity=1,
     depth=0)
 
 Incorrect =visual.TextStim(win=win, name='Incorrect',
     text='Incorrect',font=u'Arial',
-    pos=(0, 0), height=0.2, wrapWidth=None, ori=0, 
-    color=u'black', colorSpace='rgb', opacity=1,
+    pos=(0, -0.75), height=0.2, wrapWidth=None, ori=0, 
+    color=u'red', colorSpace='rgb', opacity=1,
     depth=0)
+
+Post_Q1 = visual.TextStim(win=win, name='blank', text='Have you noticed that some face images were presented with different frequencies \ (i.e. some showed up more times than the others)? \ Press' + 'y' + 'if you noticed and' + 'n' + 'if you did not', 
+    font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
+    color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
+
+Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presented with images that you have seen in the main experiment. Indicate which one was presented in the main experiment more frequently by clicking on the image. Press the space bar to contiune. ', 
+    font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
+    color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
+
 
 Ending = visual.TextStim(win=win, name='Instr_1', color='black',
     text='Thank you for participating in this study. Press the spacebar to quit and call over the researcher for a post-task.')
@@ -326,7 +335,10 @@ for ptrial in range(12):
                  key_resp.rt = key_resp.clock.getTime()
                  thisExp.addData('Response', theseKeys[-1])
                  thisExp.addData('RT', key_resp.rt)
-        
+            if theseKeys[-1] == None:
+                 key_resp.corr = 0
+                 Incorrect.setAutoDraw(True)
+
             # was this 'correct'?
             if str(corrAns) in theseKeys:
                  key_resp.corr = 1
@@ -335,6 +347,9 @@ for ptrial in range(12):
                  key_resp.corr = 0
                  Incorrect.setAutoDraw(True)
 
+        if t > (2*ITI + duration):
+             Incorrect.setAutoDraw(False)
+             Correct.setAutoDraw(False)
 
         ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
         if continueRoutine:
@@ -678,6 +693,36 @@ for trial in range(27,30):
 
 
 #read the exp matrix, read the low frequency especially, since they'll be in every pair.
+
+# Post-questions
+#Post_Q1
+
+
+
+# Force choice
+#Instr_Post
+#Forced choice + click response
+##---------------------------Post Forced Choice Task-------------------------------## 
+theseKeys = []
+trialcounter = 0
+Instr_Post.setAutoDraw(True)
+continueRoutine = True
+while continueRoutine:
+    if event.getKeys(keyList=["escape"]):
+        core.quit()
+    if len(event.getKeys(keyList=["space"])) == 0:
+        win.flip()
+    else:
+        break
+Instr_Post.setAutoDraw(False)
+
+for ptrial in range(15,27):
+    t = 0
+    Practice_2_Clock.reset()
+    continueRoutine = True
+
+    ##------------------SET DURATION & ITI OF STIMULI-------------------##
+
 
 
 event.clearEvents(eventType='keyboard')
