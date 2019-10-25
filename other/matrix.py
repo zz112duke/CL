@@ -101,6 +101,21 @@ Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presen
     font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
     color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
 
+stim_image_right = visual.ImageStim(win=win, name='stim_image_right', 
+    image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
+    ori=0, pos=(0.2, 0), opacity=1, texRes=128, depth=0,
+    size=(0.75, 1), interpolate = True)
+
+stim_image_left = visual.ImageStim(win=win, name='stim_image_left', 
+    image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
+    ori=0, pos=(-0.2, 0), opacity=1, texRes=128, depth=0,
+    size=(0.75, 1), interpolate = True)
+
+PostFC =visual.TextStim(win=win, name='Post_Q2',
+    text='Which one was presented higher or lower frequency in the main experiment?',font=u'Arial',
+    pos=(0, 0), height=0.2, wrapWidth=None, ori=0, 
+    color=u'red', colorSpace='rgb', opacity=1,
+    depth=0)
 
 Ending = visual.TextStim(win=win, name='Instr_1', color='black',
     text='Thank you for participating in this study. Press the spacebar to quit and call over the researcher for a post-task.')
@@ -217,20 +232,143 @@ else:
 # Task_1 & Task_2, where each has 20 columns saying 'con' & 'non'
 # Question: 20 says 'higher' and 20 says 'lower'.
 # Correct response
+#left vs. right?
 
 F1 = ['Low'] *40
 F2 = ['Medium'] * 20 + ['High'] * 20
+random.shuffle(F2)
 Question = ['higher'] * 20 + ['lower'] * 20
+random.shuffle(Question)
+Position = ['L'] * 20 + ['R'] * 20
+random.shuffle(Position)
 
-F1_path = expmatrix.loc[(expmatrix.Congruency == 'N/A') & (expmatrix.Frequency == 'Low')]
-print (F1_path)
+low_non = expmatrix.loc[(expmatrix.Congruency == 'N/A') & (expmatrix.Frequency == 'low')].sample(n=20)[['stim_image','Congruency']]
+low_con = expmatrix.loc[(expmatrix.Congruency != 'N/A') & (expmatrix.Frequency == 'low')].sample(n=20)[['stim_image','Congruency']]
+
+medium_non = expmatrix.loc[(expmatrix.Congruency == 'N/A') & (expmatrix.Frequency == 'medium')].sample(n=10)[['stim_image','Congruency']]
+medium_con = expmatrix.loc[(expmatrix.Congruency != 'N/A') & (expmatrix.Frequency == 'medium')].sample(n=10)[['stim_image','Congruency']]
+
+high_non = expmatrix.loc[(expmatrix.Congruency == 'N/A') & (expmatrix.Frequency == 'high')].sample(n=10)[['stim_image','Congruency']]
+high_con = expmatrix.loc[(expmatrix.Congruency != 'N/A') & (expmatrix.Frequency == 'high')].sample(n=10)[['stim_image','Congruency']]
+
+F1_path = pd.concat([low_non,low_con],ignore_index=True)
+print(F1_path)
+F2_path = pd.concat([medium_non, high_non, medium_con, high_con],ignore_index=True)
+print(F2_path)
+corrAns = ['N/A']*40
+
+postmatrix = [F1, F2, Position, Question,corrAns]
+postmatrix = pd.DataFrame(postmatrix)
+postmatrix = postmatrix.transpose()
+postmatrix.columns = ['F1','F2','Position','Question','corrAns']
+postmatrix = pd.concat([postmatrix, F1_path, F2_path], axis=1)
+postmatrix.columns = ['F1','F2','Position','Question','corrAns','F1_path','F1_congruency','F2_path','F2_congruency']
+#F1&F2 should from the same task
+
+for i in range(len(postmatrix)):
+    if postmatrix.loc[i,'Question'] == 'higher':
+        if postmatrix.loc[i,'Position'] == 'L':
+            postmatrix.set_value(i,'corrAns','right')
+        else:
+            postmatrix.set_value(i,'corrAns','left')
+    else:
+        if postmatrix.loc[i,'Position'] == 'L':
+            postmatrix.set_value(i,'corrAns','left')
+        else:
+            postmatrix.set_value(i,'corrAns','right')
 
 
+postmatrix.to_csv(r'postmatrix.csv')
+
+# Post Forced Choice Instr
+lines_PostFC = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_PostFC.txt"))]
+lines_PostFC.append
 
 
+##------------------------------START Post Forced Choice----------------------------------##
+theseKeys = []
+trialcounter = 0
+Instr_Post.setAutoDraw(True)
+advance = 0
+while advance < 1:
+    if event.getKeys(keyList=["space"]):
+        advance += 1
+        Instr_Post.setAutoDraw(False)
+    if event.getKeys(keyList=["escape"]):
+        core.quit()
+    win.flip()
+
+for trial in range(len(postmatrix)):
+    t = 0
+    #Post_Clock.reset()
+    continueRoutine = True
+
+    ##---------------------SET STIMULI & RESPONSE---------------------------##
+    if postmatrix.loc[trial,'Position'] == 'R':#if low is on the right, R
+        stim_right = postmatrix.loc[trial,'F1_path']
+        stim_left = postmatrix.loc[trial,'F2_path']
+    else:
+        stim_left = postmatrix.loc[trial,'F1_path']
+        stim_right = postmatrix.loc[trial,'F2_path']
+    stim_image_right.setImage(stim_right)
+    stim_image_left.setImage(stim_left)
+
+    corrAns = postmatrix.loc[trial,'corrAns']
+    
+    if postmatrix.loc[trial,'Question'] == 'higher':
+        lines_PostFC.append('HIGHER frequncy? If you think it is the image on the left (right), press the left (right) button. Now press the space bar to begin.')
+    else:
+        lines_PostFC.append('LOWER frequncy? If you think it is the image on the left (right), press the left (right) button. Now press the space bar to begin.')
+    
+    PostFC = visual.TextStim(win=win, name='PostFC', color='black', text=(' '.join(map(str, lines_PostFC))))
+#    ##--------------------------WHILE LOOP BEGINS-------------------------##
+    while continueRoutine:
+        PostFC.setAutoDraw(True)
+        advance = 0
+        while advance < 1:
+            if event.getKeys(keyList=["space"]):
+                advance += 1
+                PostFC.setAutoDraw(False)
+            if event.getKeys(keyList=["escape"]):
+                core.quit()
+            win.flip()
+#        if event.getKeys(keyList=["escape"]):
+#            core.quit()
+#        if len(event.getKeys(keyList=["space"])) == 0:
+#            win.flip()
+#        if len(event.getKeys(keyList=["space"])) == 1:
+#            PostFC.setAutoDraw(False)
+
+        key_resp = event.BuilderKeyResponse()
+
+        ##--------------------STIMULI PRESENTATION-------------------------------##
+        stim_image_right.setAutoDraw(True)
+        stim_image_right.setAutoDraw(True)
+        event.waitKeys(keyList=["left", "right"])
+        continueRoutine = False
+
+        if len(theseKeys) > 0:# at least one key press
+            # was this 'correct'?
+            if str(corrAns) in theseKeys:
+                 key_resp.corr = 1
+                 thisExp.addData('Accuracy', key_resp.corr)
+            else:
+                 key_resp.corr = 0
+                 thisExp.addData('Accuracy', key_resp.corr)
 
 
-
+        ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
+    
+        if continueRoutine:
+             win.flip()
+        else:
+             break
+##--------------------------RECORD DATA-------------------------------##
+    trialcounter += 1
+    thisExp.addData('Trial',trialcounter)
+    #thisExp.addData('Congruency', Congruency) 
+    thisExp.nextEntry()
+# completed 40 repeats of 'Post_Forced_Choice'
 
 
 
