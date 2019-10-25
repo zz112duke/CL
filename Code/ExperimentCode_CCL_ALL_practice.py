@@ -101,6 +101,16 @@ Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presen
     font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
     color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
 
+stim_image_post = visual.ImageStim(win=win, name='Image', 
+    image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
+    ori=0, pos=(0, 0), opacity=1, texRes=128, depth=0,
+    size=(0.75, 1), interpolate = True)
+
+Post_Q2 =visual.TextStim(win=win, name='Post_Q2',
+    text='Which one was presented higher or lower frequency in the main experiment?',font=u'Arial',
+    pos=(0, 0), height=0.2, wrapWidth=None, ori=0, 
+    color=u'red', colorSpace='rgb', opacity=1,
+    depth=0)
 
 Ending = visual.TextStim(win=win, name='Instr_1', color='black',
     text='Thank you for participating in this study. Press the spacebar to quit and call over the researcher for a post-task.')
@@ -237,6 +247,10 @@ lines_mid.append("Please memorize the task rule and press the space bar to begin
 # Practice Instr
 lines_practice = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Practice.txt"))]
 lines_practice.append
+
+# Post Forced Choice Instr
+lines_post = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Post.txt"))]
+lines_post.append
 
 Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black',
     text=(' '.join(map(str, lines_begin))))
