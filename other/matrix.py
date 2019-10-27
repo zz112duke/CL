@@ -97,19 +97,19 @@ Post_Q1 = visual.TextStim(win=win, name='blank', text='Have you noticed that som
     font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
     color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
 
-Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presented with images that you have seen in the main experiment. Indicate which one was presented in the main experiment more frequently by clicking on the image. Press the space bar to contiune. ', 
+Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presented with images that you have seen in the main experiment. You will be asked to approxiamte the relative frequency that the images were presented. If your answer is the left image, press left; if it is the right image, press right. Press the space bar to contiune. ', 
     font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
     color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
 
 stim_image_right = visual.ImageStim(win=win, name='stim_image_right', 
     image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
-    ori=0, pos=(0.2, 0), opacity=1, texRes=128, depth=0,
-    size=(0.75, 1), interpolate = True)
+    ori=0, pos=(0.4, -0.2), opacity=1, texRes=128, depth=0,
+    size=(0.5, 0.67), interpolate = True)
 
 stim_image_left = visual.ImageStim(win=win, name='stim_image_left', 
     image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
-    ori=0, pos=(-0.2, 0), opacity=1, texRes=128, depth=0,
-    size=(0.75, 1), interpolate = True)
+    ori=0, pos=(-0.4, -0.2), opacity=1, texRes=128, depth=0,
+    size=(0.5, 0.67), interpolate = True)
 
 PostFC =visual.TextStim(win=win, name='Post_Q2',
     text='Which one was presented higher or lower frequency in the main experiment?',font=u'Arial',
@@ -280,10 +280,6 @@ for i in range(len(postmatrix)):
 
 postmatrix.to_csv(r'postmatrix.csv')
 
-# Post Forced Choice Instr
-lines_PostFC = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_PostFC.txt"))]
-lines_PostFC.append
-
 
 ##------------------------------START Post Forced Choice----------------------------------##
 theseKeys = []
@@ -299,8 +295,6 @@ while advance < 1:
     win.flip()
 
 for trial in range(len(postmatrix)):
-    t = 0
-    #Post_Clock.reset()
     continueRoutine = True
 
     ##---------------------SET STIMULI & RESPONSE---------------------------##
@@ -314,51 +308,45 @@ for trial in range(len(postmatrix)):
     stim_image_left.setImage(stim_left)
 
     corrAns = postmatrix.loc[trial,'corrAns']
-    
+    Congruency = postmatrix.loc[trial,'F1_congruency']
+    Frequency_Pair = 'Low-' + postmatrix.loc[trial,'F2']
+
+    # Post Forced Choice Instr
+    lines_PostFC = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_PostFC.txt"))]
+    lines_PostFC.append
     if postmatrix.loc[trial,'Question'] == 'higher':
-        lines_PostFC.append('HIGHER frequncy? If you think it is the image on the left (right), press the left (right) button. Now press the space bar to begin.')
+        lines_PostFC.append('HIGHER frequncy?')
     else:
-        lines_PostFC.append('LOWER frequncy? If you think it is the image on the left (right), press the left (right) button. Now press the space bar to begin.')
+        lines_PostFC.append('LOWER frequncy?')
     
-    PostFC = visual.TextStim(win=win, name='PostFC', color='black', text=(' '.join(map(str, lines_PostFC))))
-#    ##--------------------------WHILE LOOP BEGINS-------------------------##
+    PostFC = visual.TextStim(win=win, name='PostFC', pos=(0, 0.4), height=0.1, color='black', text=(' '.join(map(str, lines_PostFC))))
+    ##--------------------------WHILE LOOP BEGINS-------------------------##
     while continueRoutine:
+        key_resp = event.BuilderKeyResponse()
         PostFC.setAutoDraw(True)
+        stim_image_right.setAutoDraw(True)
+        stim_image_left.setAutoDraw(True)
+        ##--------------------STIMULI PRESENTATION--------------------------##
         advance = 0
-        while advance < 1:
-            if event.getKeys(keyList=["space"]):
+        while advance == 0:
+            theseKeys = event.getKeys(keyList=['left','right'])
+            if theseKeys:
                 advance += 1
                 PostFC.setAutoDraw(False)
+                stim_image_right.setAutoDraw(False)
+                stim_image_left.setAutoDraw(False)
             if event.getKeys(keyList=["escape"]):
                 core.quit()
             win.flip()
-#        if event.getKeys(keyList=["escape"]):
-#            core.quit()
-#        if len(event.getKeys(keyList=["space"])) == 0:
-#            win.flip()
-#        if len(event.getKeys(keyList=["space"])) == 1:
-#            PostFC.setAutoDraw(False)
+            
+            if str(corrAns) in theseKeys:
+                thisExp.addData('Accuracy', 1)
+            else:
+                thisExp.addData('Accuracy', 0)
 
-        key_resp = event.BuilderKeyResponse()
-
-        ##--------------------STIMULI PRESENTATION-------------------------------##
-        stim_image_right.setAutoDraw(True)
-        stim_image_right.setAutoDraw(True)
-        event.waitKeys(keyList=["left", "right"])
         continueRoutine = False
 
-        if len(theseKeys) > 0:# at least one key press
-            # was this 'correct'?
-            if str(corrAns) in theseKeys:
-                 key_resp.corr = 1
-                 thisExp.addData('Accuracy', key_resp.corr)
-            else:
-                 key_resp.corr = 0
-                 thisExp.addData('Accuracy', key_resp.corr)
-
-
         ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
-    
         if continueRoutine:
              win.flip()
         else:
@@ -366,7 +354,8 @@ for trial in range(len(postmatrix)):
 ##--------------------------RECORD DATA-------------------------------##
     trialcounter += 1
     thisExp.addData('Trial',trialcounter)
-    #thisExp.addData('Congruency', Congruency) 
+    thisExp.addData('Congruency', Congruency) 
+    thisExp.addData('Frequency_Pair', Frequency_Pair) 
     thisExp.nextEntry()
 # completed 40 repeats of 'Post_Forced_Choice'
 
