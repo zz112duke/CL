@@ -39,7 +39,7 @@ logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a f
 
 # Setup the Window
 win = visual.Window(
-    size=(1024, 768), fullscr=False, allowGUI=False,
+    size=(1024, 768), fullscr=True, allowGUI=False,
     monitor='testMonitor', color=[1,1,1], useFBO=True)
 
 ##########Timer##########
@@ -52,8 +52,6 @@ Task_2_Clock = core.Clock()
 ##########Version##########
 # version 1 [non,con] version 2 [con,non]
 version = random.choice([1,2])
-#print (version)
-
 
 ##########Stimuli##########
 Imagelist1 = list(os.listdir(_thisDir + '/Set1'))
@@ -64,7 +62,6 @@ Imagelist2 = ["Set2/" + i for i in Imagelist2]
 
 Practicelist = list(os.listdir(_thisDir + '/Practice'))
 Practicelist = ["Practice/" + i for i in Practicelist]
-#print(Practicelist)
 
 Image = visual.ImageStim(win=win, name='Image', 
     image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
@@ -97,7 +94,7 @@ Post_Q1 = visual.TextStim(win=win, name='blank', text='Have you noticed that som
     font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
     color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
 
-Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presented with images that you have seen in the main experiment. Indicate which one was presented in the main experiment more frequently by clicking on the image. Press the space bar to contiune. ', 
+Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presented with images that you have seen in the main experiment. Indicate which one you think was presented in the main experiment more frequently by clicking on the image. Press the space bar to contiune. ', 
     font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
     color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
 
@@ -151,13 +148,12 @@ duration = [duration]*252
 
 
 ##########Frequency##########
-frequency = ['N/A']*12 + ['high']*80 + ['medium']*80 + ['low']*80
-#frequency_practice = ['N/A']*12
+frequency = ['None']*12 + ['high']*80 + ['medium']*80 + ['low']*80
 
 ##########Congruency##########
 congruency_con = ['con']*6 + ['incon']*6 + ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40 + ['con']*40 + ['incon']*40
 #congruency_con_practice = ['con']*6 + ['incon']*6
-congruency_non = ['N/A']*252
+congruency_non = ['None']*252
 
 
 image_set = [stim_image1,stim_image2]
@@ -212,7 +208,7 @@ expmatrix_con = pd.DataFrame(expmatrix_con)
 expmatrix_con = expmatrix_con.transpose()
 expmatrix_con.columns = ['stim_image','Frequency','Congruency','corrAns','Duration','ITI']
 expmatrix_con_exp = expmatrix_con[12:252].sample(frac=1).reset_index(drop=True)
-expmatrix_con_prac = expmatrix_non[0:12].sample(frac=1).reset_index(drop=True)
+expmatrix_con_prac = expmatrix_con[0:12].sample(frac=1).reset_index(drop=True)
 
 
 if version == 1:
@@ -220,28 +216,28 @@ if version == 1:
 else:
     expmatrix = pd.concat([expmatrix_con_prac, expmatrix_con_exp, expmatrix_non_prac , expmatrix_non_exp],ignore_index=True)
 
-#expmatrix.to_csv(r'matrix.csv')
+expmatrix.to_csv(r'expmatrix.csv')
 ##########Instruction##########
 # Beginning Instr
-lines_begin = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin.txt"))]
+lines_begin_1 = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin1.txt"))]
 if version == 2:
-    lines_begin.append('A word will also be presented on top of every face image. \nYour task is to ignore the meaning of the word and still to categorize the gender of the face image.')
+    lines_begin_1.append('A text label will also be presented on top of every face image.')
 else:
     pass
 
-
+lines_begin_2 = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin2.txt"))]
 if Ans_version == 0:
-    lines_begin.append('Press' + ' ' + SR[0] + ' ' + 'if the image shows a female face and' + ' ' + SR[1] + ' '+ 'if it shows a male face.')
+    lines_begin_2.append('Press' + ' ' + SR[0] + ' ' + 'if the image shows a female face and' + ' ' + SR[1] + ' '+ 'if it shows a male face.')
 else:
-    lines_begin.append('Press' + ' ' + SR[0] + ' ' + 'if the image shows a male face and' + ' ' + SR[1] + ' ' + 'if it shows a female face.')
-lines_begin.append("Memorize that task rule and press the space bar to begin the practice trials.")
+    lines_begin_2.append('Press' + ' ' + SR[0] + ' ' + 'if the image shows a male face and' + ' ' + SR[1] + ' ' + 'if it shows a female face.')
+lines_begin_2.append("Memorize that task rule and press the space bar to begin the practice trials.")
 
 # Mid-way Instr (task change)
 lines_mid = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
 if version == 1:
-    lines_mid.append('This time, a word will be presented on top of every face image.\nYour task is to ignore the meaning of the word and still to categorize the gender of the face image')
+    lines_mid.append('This time, a text label will be presented on top of every face image.\nYour task is to ignore the meaning of the word and still to categorize the gender of the face image')
 else:
-    lines_mid.append('This time, the word will no longer be shown on top of the images. \nYour task is still to categorize the face image.')
+    lines_mid.append('This time, the word will no longer be shown on top of the images. \nYour task is to categorize the face image.')
 lines_mid.append("Please memorize the task rule and press the space bar to begin.")
 
 # Practice Instr
@@ -249,12 +245,14 @@ lines_practice = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLIns
 lines_practice.append
 
 # Post Forced Choice Instr
-lines_post = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Post.txt"))]
+lines_post = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_PostFC.txt"))]
 lines_post.append
 
 Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black',
-    text=(' '.join(map(str, lines_begin))))
+    text=(' '.join(map(str, lines_begin_1))))
 Instr_2 = visual.TextStim(win=win, name='Instr_2 ', color='black',
+    text=(' '.join(map(str, lines_begin_2))))
+Instr_3 = visual.TextStim(win=win, name='Instr_3 ', color='black',
     text=(' '.join(map(str, lines_mid))))
 Instr_Practice = visual.TextStim(win=win, name='Instr_Practice', color='black',
     text=(' '.join(map(str, lines_practice))))
@@ -268,16 +266,16 @@ Instr_Practice = visual.TextStim(win=win, name='Instr_Practice', color='black',
 ##---------------------------START INSTRUCTIONS-------------------------------##
 # Should set the ins according to the version
 Instr_1.setAutoDraw(True)
-
 advance = 0
-while advance < 1:
+while advance < 2:
     if event.getKeys(keyList=["space"]):
         advance += 1
         Instr_1.setAutoDraw(False)
+        Instr_2.setAutoDraw(True)
     if event.getKeys(keyList=["escape"]):
         core.quit()
     win.flip()
-
+Instr_2.setAutoDraw(False)
 ##---------------------------START Practice_1-------------------------------## 
 theseKeys = []
 trialcounter = 0
@@ -292,7 +290,6 @@ for ptrial in range(12):
     
     #ITI jittering 800-2000 ms
     ITI = expmatrix.loc[ptrial,'ITI']
-    print(ITI)
 
     ##---------------------SET STIMULI & RESPONSE---------------------------##
     stim_image = expmatrix.loc[ptrial,'stim_image']
@@ -300,9 +297,8 @@ for ptrial in range(12):
     frequency = expmatrix.loc[ptrial,'Frequency']
     corrAns = expmatrix.loc[ptrial,'corrAns']
     congruency = expmatrix.loc[ptrial,'Congruency']
-    print(congruency)
 
-    if congruency != 'N/A':
+    if congruency != 'None':
         if congruency == 'con':
             if ('m' or 'M') in stim_image:
                  stroop_text.setText('Male')
@@ -329,7 +325,7 @@ for ptrial in range(12):
         elif t > ITI and t < ITI + duration:
              Blank.setAutoDraw(False)
              Image.setAutoDraw(True)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(True)
              else:
                  pass
@@ -337,22 +333,19 @@ for ptrial in range(12):
         else:
              Image.setAutoDraw(False)
              Blank.setAutoDraw(False)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(False)
              else:
                  pass
              continueRoutine = False
 
-        theseKeys = event.getKeys(keyList=['w', 'o'])       
-        if len(theseKeys) > 0 and t < ITI + duration:# at least one key was pressed
-            if theseKeys[-1] != None:
-                 key_resp.rt = key_resp.clock.getTime()
-                 thisExp.addData('Response', theseKeys[-1])
-                 thisExp.addData('RT', key_resp.rt)
-            if theseKeys[-1] == None:
-                 key_resp.corr = 0
-                 Incorrect.setAutoDraw(True)
-
+        theseKeys = event.getKeys(keyList=['w', 'o'])
+        if len(theseKeys) > 0 and t < ITI + duration and t > duration:# at least one key was pressed
+#            if theseKeys[-1] == None:
+#                 key_resp.corr = 0
+#                 Incorrect.setAutoDraw(True)
+            theseKeys = theseKeys[0]
+            print(theseKeys[0])
             # was this 'correct'?
             if str(corrAns) in theseKeys:
                  key_resp.corr = 1
@@ -360,10 +353,6 @@ for ptrial in range(12):
             else:
                  key_resp.corr = 0
                  Incorrect.setAutoDraw(True)
-
-        if t > (2*ITI + duration):
-             Incorrect.setAutoDraw(False)
-             Correct.setAutoDraw(False)
 
         ##------------CHECK ALL IF COMPONENTS HAVE FINISHED---------------##
         if continueRoutine:
@@ -392,7 +381,7 @@ while advance < 1:
         core.quit()
     win.flip()
 
-for trial in range(12,15):
+for trial in range(12,252):
     t = 0
     Task_1_Clock.reset()  # clock
     continueRoutine = True
@@ -411,7 +400,7 @@ for trial in range(12,15):
     corrAns = expmatrix.loc[trial,'corrAns']
     congruency = expmatrix.loc[trial,'Congruency']
     
-    if congruency != 'N/A':
+    if congruency != 'None':
         if congruency == 'con':
             if ('m' or 'M') in stim_image:
                  stroop_text.setText('Male')
@@ -439,7 +428,7 @@ for trial in range(12,15):
         elif t > ITI and t < ITI + duration:
              Blank.setAutoDraw(False)
              Image.setAutoDraw(True)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(True)
              else:
                  pass
@@ -447,7 +436,7 @@ for trial in range(12,15):
         else:
              Image.setAutoDraw(False)
              Blank.setAutoDraw(False)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(False)
              else:
                  pass
@@ -505,7 +494,7 @@ while continueRoutine:
         break
 Instr_2.setAutoDraw(False)
 
-for ptrial in range(15,27):
+for ptrial in range(252,264):
     t = 0
     Practice_2_Clock.reset()
     continueRoutine = True
@@ -524,7 +513,7 @@ for ptrial in range(15,27):
     corrAns = expmatrix.loc[ptrial,'corrAns']
     congruency = expmatrix.loc[ptrial,'Congruency']
 
-    if congruency != 'N/A':
+    if congruency != 'None':
         if congruency == 'con':
             if ('m' or 'M') in stim_image:
                  stroop_text.setText('Male')
@@ -551,7 +540,7 @@ for ptrial in range(15,27):
         elif t > ITI and t < ITI + duration:
              Blank.setAutoDraw(False)
              Image.setAutoDraw(True)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(True)
              else:
                  pass
@@ -559,7 +548,7 @@ for ptrial in range(15,27):
         else:
              Image.setAutoDraw(False)
              Blank.setAutoDraw(False)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(False)
              else:
                  pass
@@ -586,6 +575,8 @@ for ptrial in range(15,27):
         if continueRoutine:
              win.flip()
         else:
+             Correct.setAutoDraw(False)
+             Incorrect.setAutoDraw(False)
              break
 
 ##--------------------------NO NEED TO RECORD DATA-------------------------------##
@@ -606,7 +597,7 @@ while advance < 1:
         core.quit()
     win.flip()
 
-for trial in range(27,30):
+for trial in range(264,504):
     t = 0
     overalltime = globalClock.getTime()
     Task_2_Clock.reset()  # clock
@@ -626,7 +617,7 @@ for trial in range(27,30):
     corrAns = expmatrix.loc[trial,'corrAns']
     congruency = expmatrix.loc[trial,'Congruency']
     
-    if congruency != 'N/A':
+    if congruency != 'None':
         if congruency == 'con':
             if ('m' or 'M') in stim_image:
                  stroop_text.setText('Male')
@@ -654,7 +645,7 @@ for trial in range(27,30):
         elif t > ITI and t < ITI + duration:
              Blank.setAutoDraw(False)
              Image.setAutoDraw(True)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(True)
              else:
                  pass
@@ -662,7 +653,7 @@ for trial in range(27,30):
         else:
              Image.setAutoDraw(False)
              Blank.setAutoDraw(False)
-             if congruency != 'N/A':
+             if congruency != 'None':
                  stroop_text.setAutoDraw(False)
              else:
                  pass
@@ -705,41 +696,7 @@ for trial in range(27,30):
     thisExp.nextEntry()
 # completed 240 repeats of 'Task_2'
 
-
-#read the exp matrix, read the low frequency especially, since they'll be in every pair.
-
-# Post-questions
-#Post_Q1
-
-
-
-# Force choice
-#Instr_Post
-#Forced choice + click response
-##---------------------------Post Forced Choice Task-------------------------------## 
-theseKeys = []
-trialcounter = 0
-Instr_Post.setAutoDraw(True)
-continueRoutine = True
-while continueRoutine:
-    if event.getKeys(keyList=["escape"]):
-        core.quit()
-    if len(event.getKeys(keyList=["space"])) == 0:
-        win.flip()
-    else:
-        break
-Instr_Post.setAutoDraw(False)
-
-for ptrial in range(15,27):
-    t = 0
-    Practice_2_Clock.reset()
-    continueRoutine = True
-
-    ##------------------SET DURATION & ITI OF STIMULI-------------------##
-
-
-
-event.clearEvents(eventType='keyboard')
+#event.clearEvents(eventType='keyboard')
 Ending.setAutoDraw(True)
 
 
