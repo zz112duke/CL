@@ -226,6 +226,10 @@ else:
     pass
 
 lines_begin_2 = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin2.txt"))]
+if version == 2:
+    lines_begin_2.append('ignore the meaning of the word and to categorize the gender of the face image.')
+else:
+    lines_begin_2.append('categorize the gender of the face image.')
 if Ans_version == 0:
     lines_begin_2.append('Press' + ' ' + SR[0] + ' ' + 'if the image shows a female face and' + ' ' + SR[1] + ' '+ 'if it shows a male face.')
 else:
@@ -248,13 +252,13 @@ lines_practice.append
 lines_post = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_PostFC.txt"))]
 lines_post.append
 
-Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black',
+Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
     text=(' '.join(map(str, lines_begin_1))))
-Instr_2 = visual.TextStim(win=win, name='Instr_2 ', color='black',
+Instr_2 = visual.TextStim(win=win, name='Instr_2 ', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
     text=(' '.join(map(str, lines_begin_2))))
-Instr_3 = visual.TextStim(win=win, name='Instr_3 ', color='black',
+Instr_3 = visual.TextStim(win=win, name='Instr_3 ', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
     text=(' '.join(map(str, lines_mid))))
-Instr_Practice = visual.TextStim(win=win, name='Instr_Practice', color='black',
+Instr_Practice = visual.TextStim(win=win, name='Instr_Practice', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
     text=(' '.join(map(str, lines_practice))))
 
 
@@ -556,9 +560,6 @@ for ptrial in range(252,264):
 
         theseKeys = event.getKeys(keyList=['w', 'o'])       
         if len(theseKeys) > 0 and t < ITI + duration:# at least one key was pressed
-            if theseKeys[-1] != None:
-
-        
             # was this 'correct'?
             if str(corrAns) in theseKeys:
                  key_resp.corr = 1
