@@ -52,13 +52,16 @@ Task_2_Clock = core.Clock()
 ##########Version##########
 # version 1 [non,con] version 2 [con,non]
 version = random.choice([1,2])
+print(version)
 
 ##########Stimuli##########
 Imagelist1 = list(os.listdir(_thisDir + '/Set1'))
 Imagelist1 = ["Set1/" + i for i in Imagelist1]
+print(Imagelist1)
 
 Imagelist2 = list(os.listdir(_thisDir + '/Set2'))
 Imagelist2 = ["Set2/" + i for i in Imagelist2]
+print(Imagelist2)
 
 Practicelist = list(os.listdir(_thisDir + '/Practice'))
 Practicelist = ["Practice/" + i for i in Practicelist]
@@ -109,8 +112,6 @@ Post_Q2 =visual.TextStim(win=win, name='Post_Q2',
     color=u'red', colorSpace='rgb', opacity=1,
     depth=0)
 
-Ending = visual.TextStim(win=win, name='Instr_1', color='black',
-    text='Thank you for participating in this study. Press the spacebar to quit and call over the researcher for a post-task.')
 
 ###Indexing Image###
 # index the images for high, medium and low frequencies for later selection
@@ -126,13 +127,15 @@ stim_image_high1 = [Imagelist1[i] for i in indices_high]*10
 stim_image_medium1 = [Imagelist1[i] for i in indices_medium]*5
 stim_image_low1 = [Imagelist1[i] for i in indices_low]
 stim_image1 = Practicelist*3 + stim_image_high1 +stim_image_medium1 + stim_image_low1
+print(stim_image1)
 
 random.shuffle(Imagelist2)
 stim_image_high2 = [Imagelist2[i] for i in indices_high]*10
 stim_image_medium2 = [Imagelist2[i] for i in indices_medium]*5
 stim_image_low2 = [Imagelist2[i] for i in indices_low]
 stim_image2 = Practicelist*3 + stim_image_high2 +stim_image_medium2 + stim_image_low2
-#print (stim_image2)
+print (stim_image2)
+
 ##########Timing##########
 trials = 240
 duration = 1.0
@@ -163,6 +166,7 @@ random.shuffle(image_set)
 # S-R mapping is different from exp version so needs a new number generator #
 # 0 --> female w, male o; 1 --> female o, male w
 Ans_version = random.choice([0,1])
+print(Ans_version)
 
 corrAns1 = []
 corrAns2 = []
@@ -170,7 +174,7 @@ corrAns2 = []
 if Ans_version==0:
     SR = ['w','o']
     for i in image_set[0]:
-        if ('m' or 'M') in i:
+        if ('m' or  'M') in i:
             corrAns1.append(SR[1])
         else:
             corrAns1.append(SR[0])
@@ -237,12 +241,20 @@ else:
 lines_begin_2.append("Memorize that task rule and press the space bar to begin the practice trials.")
 
 # Mid-way Instr (task change)
-lines_mid = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
+lines_mid_1 = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Mid.txt"))]
 if version == 1:
-    lines_mid.append('This time, a text label will be presented on top of every face image.\nYour task is to ignore the meaning of the word and still to categorize the gender of the face image')
+    lines_mid_1.append('This time, a text label will be presented on top of every face image.')
 else:
-    lines_mid.append('This time, the word will no longer be shown on top of the images. \nYour task is to categorize the face image.')
-lines_mid.append("Please memorize the task rule and press the space bar to begin.")
+    lines_mid_1.append('This time, the word will no longer be shown on top of the images.')
+
+lines_mid_2 = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Begin2.txt"))]
+if version == 1:
+    lines_mid_2.append('ignore the meaning of the word and still to categorize the gender of the face image.)
+else:
+    lines_mid_2.append('still categorize the face image.')
+
+lines_mid_2.append("Please memorize the task rule and press the space bar to begin.")
+
 
 # Practice Instr
 lines_practice = [line.rstrip('\n') for line in open(os.path.join(binDir, "CLInstr_Practice.txt"))]
@@ -257,7 +269,9 @@ Instr_1 = visual.TextStim(win=win, name='Instr_1 ', color='black', font=u'Arial'
 Instr_2 = visual.TextStim(win=win, name='Instr_2 ', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
     text=(' '.join(map(str, lines_begin_2))))
 Instr_3 = visual.TextStim(win=win, name='Instr_3 ', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
-    text=(' '.join(map(str, lines_mid))))
+    text=(' '.join(map(str, lines_mid1))))
+Instr_4 = visual.TextStim(win=win, name='Instr_4 ', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
+    text=(' '.join(map(str, lines_mid2))))
 Instr_Practice = visual.TextStim(win=win, name='Instr_Practice', color='black', font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None,
     text=(' '.join(map(str, lines_practice))))
 
@@ -485,18 +499,20 @@ for trial in range(12,252):
 
 
 ##---------------------------START Practice_2-------------------------------## 
-theseKeys = []
-trialcounter = 0
 Instr_3.setAutoDraw(True)
-continueRoutine = True
-while continueRoutine:
+advance = 0
+while advance < 2:
+    if event.getKeys(keyList=["space"]):
+        advance += 1
+        Instr_3.setAutoDraw(False)
+        Instr_4.setAutoDraw(True)
     if event.getKeys(keyList=["escape"]):
         core.quit()
-    if len(event.getKeys(keyList=["space"])) == 0:
-        win.flip()
-    else:
-        break
-Instr_3.setAutoDraw(False)
+    win.flip()
+Instr_4.setAutoDraw(False)
+
+theseKeys = []
+trialcounter = 0
 
 for ptrial in range(252,264):
     t = 0
@@ -694,13 +710,6 @@ for trial in range(264,504):
         
     thisExp.nextEntry()
 # completed 240 repeats of 'Task_2'
-
-#event.clearEvents(eventType='keyboard')
-Ending.setAutoDraw(True)
-
-
-if len(event.getKeys(keyList=["space"])) != 0:
-     Ending.setAutoDraw(False)
 
 
 # these shouldn't be strictly necessary (should auto-save)
