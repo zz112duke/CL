@@ -93,25 +93,6 @@ Incorrect =visual.TextStim(win=win, name='Incorrect',
     color=u'red', colorSpace='rgb', opacity=1,
     depth=0)
 
-Post_Q1 = visual.TextStim(win=win, name='blank', text='Have you noticed that some face images were presented with different frequencies \ (i.e. some showed up more times than the others)? \ Press' + 'y' + 'if you noticed and' + 'n' + 'if you did not', 
-    font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
-    color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
-
-Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presented with images that you have seen in the main experiment. Indicate which one you think was presented in the main experiment more frequently by clicking on the image. Press the space bar to contiune. ', 
-    font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
-    color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
-
-stim_image_post = visual.ImageStim(win=win, name='Image', 
-    image= _thisDir + '/Set1/CK_f_01.jpg', mask=None,
-    ori=0, pos=(0, 0), opacity=1, texRes=128, depth=0,
-    size=(0.75, 1), interpolate = True)
-
-Post_Q2 =visual.TextStim(win=win, name='Post_Q2',
-    text='Which one was presented higher or lower frequency in the main experiment?',font=u'Arial',
-    pos=(0, 0), height=0.2, wrapWidth=None, ori=0, 
-    color=u'red', colorSpace='rgb', opacity=1,
-    depth=0)
-
 
 ###Indexing Image###
 # index the images for high, medium and low frequencies for later selection
