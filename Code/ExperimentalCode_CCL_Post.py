@@ -49,6 +49,10 @@ Practice_2_Clock = core.Clock()
 Task_1_Clock = core.Clock()
 Task_2_Clock = core.Clock()
 
+Question_Post = visual.TextStim(win=win, name='blank', text='Have you noticed that different face images were presented with different frequencies? If your answer is yes, press y; if your answer is no, press n.', 
+    font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
+    color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
+
 Instr_Post = visual.TextStim(win=win, name='blank', text='Now you will be presented with images that you have seen in the main experiment. You will be asked to approxiamte the relative frequency that the images were presented. If your answer is the left image, press left; if it is the right image, press right. Press the space bar to contiune. ', 
     font=u'Arial', pos=(0, 0), height=0.1, wrapWidth=None, ori=0, 
     color=u'black', colorSpace='rgb', opacity=1, depth=0.0)
@@ -82,8 +86,7 @@ expmatrix = pd.read_csv('expmatrix.csv', index_col = [0])
 #left vs. right?
 
 F1 = ['Low'] *40
-F2 = ['Medium'] * 20 + ['High'] * 20
-random.shuffle(F2)
+F2 = ['Medium'] * 10 + ['High'] * 10 + ['Medium'] * 10 + ['High'] * 10
 Question = ['higher'] * 20 + ['lower'] * 20
 random.shuffle(Question)
 Position = ['L'] * 20 + ['R'] * 20
@@ -121,9 +124,24 @@ for i in range(len(postmatrix)):
             postmatrix.set_value(i,'corrAns','left')
         else:
             postmatrix.set_value(i,'corrAns','right')
-
+postmatrix = postmatrix[0:40].sample(frac=1).reset_index(drop=True)
 
 postmatrix.to_csv(r'postmatrix.csv')
+
+##------------------------------START Post Question----------------------------------##
+theseKeys = []
+advance = 0
+Question_Post.setAutoDraw(True)
+while advance == 0:
+    theseKeys = event.getKeys(keyList=['y','n'])
+    if theseKeys:
+        advance += 1
+        Question_Post.setAutoDraw(False)
+        thisExp.addData('Response', theseKeys[-1])
+    if event.getKeys(keyList=["escape"]):
+        core.quit()
+    win.flip()
+thisExp.nextEntry()
 
 
 ##------------------------------START Post Forced Choice----------------------------------##
@@ -146,9 +164,13 @@ for trial in range(len(postmatrix)):
     if postmatrix.loc[trial,'Position'] == 'R':#if low is on the right, R
         stim_right = postmatrix.loc[trial,'F1_path']
         stim_left = postmatrix.loc[trial,'F2_path']
+        thisExp.addData('F1_path', stim_right)
+        thisExp.addData('F2_path', stim_left)
     else:
         stim_left = postmatrix.loc[trial,'F1_path']
         stim_right = postmatrix.loc[trial,'F2_path']
+        thisExp.addData('F1_path', stim_left)
+        thisExp.addData('F2_path', stim_right)
     stim_image_right.setImage(stim_right)
     stim_image_left.setImage(stim_left)
 
