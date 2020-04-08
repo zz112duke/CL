@@ -1,1 +1,2 @@
-post.py is for the post-test, might combine it into ExperimentCode_CCL_ALL.py
+ExperimentCode_CCL_All.py is the main script for the experiment.
+ExperimentCode_CCL_Post.py is the script for the post task.
